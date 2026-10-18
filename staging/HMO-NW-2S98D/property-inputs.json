@@ -1,0 +1,25 @@
+{
+  "propertyCode": "HMO-NW-2S98D",
+  "contentLibraryPageId": "3fb2aad7d30e8108be5af338d698c22c",
+  "pipelinePageId": "3492aad7d30e81059fbdf2d351f27000",
+  "strategy": "HMO",
+  "town": "St Helens",
+  "postcode": "WA10 2TR",
+  "askingPriceGBP": 220000,
+  "modelMonthlyRentGBP": 2868,
+  "inputsSource": "Notion Property Deals Pipeline 18 October 2026",
+  "stage": "not_ready_for_publication",
+  "availability": {
+    "pipelineStatus": "Available",
+    "sellerConfirmedAt": null
+  },
+  "validation": {
+    "hmoCostsApproved": false,
+    "financeInputsApproved": false,
+    "feeDiscrepancyResolved": false,
+    "publicCopyApproved": false,
+    "printQAApproved": false,
+    "permanentHtmlBuilt": false
+  },
+  "notes": "Staging metadata only. Existing Maidstone HTML is supported-housing-specific and is not a validated HMO model. Do not treat this file as a production analyser or auto-promote it."
+}
