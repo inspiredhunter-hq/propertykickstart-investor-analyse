@@ -1,0 +1,42 @@
+name: SMART Deal Readiness Check
+on:
+  workflow_dispatch:
+  schedule:
+    # Monday, Tuesday, Wednesday and Friday UK working hours; UTC overlap accommodates BST and GMT.
+    - cron: '0 8,9 * * 1,2,3,5'
+    - cron: '0 14,15 * * 3'
+permissions:
+  contents: read
+  issues: write
+jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check upcoming SMART Deal readiness
+        env:
+          NOTION_TOKEN: ${{ secrets.PK_NOTION_READ_TOKEN }}
+          NOTION_DATABASE_ID: d915e3ac-8612-4454-ad05-a55f5534277a
+          TARGET_CL_PAGE_ID: 3fb2aad7d30e8108be5af338d698c22c
+        run: node scripts/check-readiness.mjs
+      - name: Upload readiness report
+        uses: actions/upload-artifact@v4
+        with:
+          name: smart-deal-readiness
+          path: reports/latest-readiness.md
+          retention-days: 30
+      - name: Open or update one readiness issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TITLE="SMART Deal readiness - upcoming issue"
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number,title --jq '.[] | select(.title == "SMART Deal readiness - upcoming issue") | .number' | head -1)
+          if [ -z "$EXISTING" ]; then
+            gh issue create --title "$TITLE" --body-file reports/latest-readiness.md
+          else
+            gh issue edit "$EXISTING" --body-file reports/latest-readiness.md
+          fi
