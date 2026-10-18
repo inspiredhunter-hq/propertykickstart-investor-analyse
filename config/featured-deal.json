@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "featuredProperty": "HA-SE-3FTDU",
+  "publicationDataSourceId": "e0ba9bac-c3c6-4cf9-913f-eff336ee79cd",
+  "properties": {
+    "HA-SE-3FTDU": {
+      "path": "HA-SE-3FTDU/index.html",
+      "publicUrl": "https://deals.propertykickstart.co.uk/HA-SE-3FTDU/",
+      "status": "published",
+      "availability": "unconfirmed",
+      "reference": "https://app.notion.com/p/3f92aad7d30e810386c6dd93d941640c"
+    }
+  },
+  "gates": {
+    "publicationStatus": "2. Published",
+    "requirePublicArticleUrl": true,
+    "requireApproved": true,
+    "requirePublishedDate": true,
+    "requirePrebuiltPropertyPage": true,
+    "requireAvailabilityCheck": true
+  }
+}
