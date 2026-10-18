@@ -21,7 +21,6 @@ jobs:
         env:
           NOTION_TOKEN: ${{ secrets.PK_NOTION_READ_TOKEN }}
           NOTION_DATABASE_ID: d915e3ac-8612-4454-ad05-a55f5534277a
-          TARGET_CL_PAGE_ID: 3fb2aad7d30e8108be5af338d698c22c
         run: node scripts/check-readiness.mjs
       - name: Upload readiness report
         uses: actions/upload-artifact@v4
