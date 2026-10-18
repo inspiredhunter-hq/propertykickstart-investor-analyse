@@ -298,11 +298,13 @@ const scenario=document.querySelectorAll('#scenarios .scenario');const scenarios
 const value=[['V · Vision','Does this opportunity support your investment objective?'],['A · Analyse','Does the capital required and cash flow fit your SCORE criteria?'],['L · Limit the downside','What happens if the rental income falls, costs rise or mortgage rates change?'],['U · Understand options','Would another property, strategy or keeping capital available suit you better?'],['E · Execute with discipline','Initial next step: proceed, investigate further or do not proceed.']];
 const pg2='<div class="ps-page"><div class="ps-top"><div class="ps-kicker">PROPERTY KICKSTART · INVESTOR ASSESSMENT</div><div class="ps-h1">Scenarios, decision and disclaimer</div><div class="ps-sub">'+esc(reference)+' · '+money(price)+' asking price · '+money(rent/12)+' monthly rent</div></div>'+
 box('Does the investment fit your criteria?',table([['Money available after contingency',money(available)],['Estimated capital required',valText('capitalSummary')],[(available-(Number(valText('capitalSummary').replace(/[^\d.]/g,''))||0))>=0?'Capital remaining after estimated purchase costs':'Additional capital needed',money(Math.abs(available-(Number(valText('capitalSummary').replace(/[^\d.]/g,''))||0)))],['Estimated monthly cash flow at '+rate.toFixed(1)+'% interest',money(yearCash/12)],['Your monthly income target',money(val('target'))],['Difference from monthly income target',money(Math.abs(yearCash/12-Number(val('target'))))+(yearCash/12>=Number(val('target'))?' above target':' below target')],['Estimated monthly cash flow at 8% interest',money((modelRent-opcosts-borrow*.08)/12)]]))+
+box('Important information and full disclaimer','<div class="ps-disclaimer">'+paras+'</div>')+
 box('See the difference scenarios make','<div class="ps-valuegrid">'+scenarios+'</div>')+
 box('VALUE · Your next decision','<div class="ps-valuegrid ps-valuevertical">'+value.map(v=>'<div class="ps-valueitem"><strong>'+v[0]+'</strong>'+v[1]+'</div>').join('')+'</div><div class="ps-selected"><b>My decision: '+esc(decision)+'</b>'+(decisionNotes?'<div>'+esc(decisionNotes)+'</div>':'')+'</div>')+
-box('Important information and full disclaimer','<div class="ps-disclaimer">'+paras+'</div>')+
+
 '<div class="ps-foot"><span>Property Kickstart · General information and illustrative figures only</span><span>Page 2 of 2</span></div></div>';
 document.getElementById('printSummary').innerHTML=pg1+pg2;
+if(!document.getElementById('printSummary').textContent.includes('Important information and full disclaimer'))console.error('Disclaimer missing from print summary');
 } catch(err){console.error('Print summary:',err);}
 }
 window.addEventListener('beforeprint',makePrint);
