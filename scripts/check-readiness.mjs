@@ -15,7 +15,12 @@ const rel=p=>p?.relation||[];
 async function query(){const out=[];let cursor;do{const resp=await fetch('https://api.notion.com/v1/databases/'+db+'/query',{method:'POST',headers:{Authorization:'Bearer '+token,'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:JSON.stringify({page_size:100,...(cursor?{start_cursor:cursor}:{})})});if(!resp.ok)throw Error('Notion API status '+resp.status);const data=await resp.json();out.push(...data.results);cursor=data.has_more?data.next_cursor:null;}while(cursor);return out;}
 const records=await query();
 const series='3fb2aad7d30e8155b7e2e96b45176013';
-const candidates=records.filter(r=>rel(r.properties['Series Registry']).some(x=>x.id.replaceAll('-','')===series)&&r.properties['Publishing Status']?.select?.name!=='2. Published');
+const candidates=records.filter(r=>{
+ const p=r.properties;
+ const linked=rel(p['Series Registry']).some(x=>x.id.replaceAll('-','')===series);
+ const titled=/SMART Deal of the Week/i.test(text(p['Content Title']));
+ return (linked||titled)&&p['Publishing Status']?.select?.name!=='2. Published';
+});
 const planned=process.env.TARGET_CL_PAGE_ID?.replaceAll('-','');
 const matches=planned?candidates.filter(r=>r.id.replaceAll('-','')===planned):candidates;
 const checks=[];
