@@ -15,7 +15,7 @@ if(process.env.GITHUB_EVENT_NAME==='schedule' && (ukHour<8||ukHour>21||!['Thu','
  console.log('Outside UK publication watch window; no changes made.');process.exit(0);
 }
 const notionToken=process.env.NOTION_TOKEN;
-if(!notionToken){console.log('NOTION_TOKEN not configured: no changes made.');process.exit(0)}
+if(!notionToken)fail('PK_NOTION_READ_TOKEN missing: configure the GitHub Actions repository secret.')
 const databaseId=process.env.NOTION_DATABASE_ID||'d915e3ac-8612-4454-ad05-a55f5534277a';
 async function notionQuery(){
  const pages=[];let cursor;
