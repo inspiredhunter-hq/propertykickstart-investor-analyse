@@ -8,6 +8,12 @@ const isTrue=p=>p?.checkbox===true;
 const plain=p=>(p?.title||p?.rich_text||[]).map(v=>v.plain_text||'').join('');
 const propertyDate=p=>p?.date?.start?.slice(0,10)||'';
 function fail(message){throw new Error('Deployment check: '+message)}
+// Scheduled runs obey the UK publishing window, including daylight-saving changes.
+const ukDay=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',weekday:'short'}).format(now);
+const ukHour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hour:'2-digit',hourCycle:'h23'}).format(now));
+if(process.env.GITHUB_EVENT_NAME==='schedule' && (ukHour<8||ukHour>21||!['Thu','Fri','Sat','Sun'].includes(ukDay))){
+ console.log('Outside UK publication watch window; no changes made.');process.exit(0);
+}
 const notionToken=process.env.NOTION_TOKEN;
 if(!notionToken){console.log('NOTION_TOKEN not configured: no changes made.');process.exit(0)}
 const databaseId=process.env.NOTION_DATABASE_ID||'d915e3ac-8612-4454-ad05-a55f5534277a';
