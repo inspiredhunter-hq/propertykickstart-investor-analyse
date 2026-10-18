@@ -1,4 +1,10 @@
 import fs from 'node:fs';
+const now=new Date();
+const ukWeekday=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',weekday:'short'}).format(now);
+const ukHour=Number(new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/London',hour:'2-digit',hourCycle:'h23'}).format(now));
+if(process.env.GITHUB_EVENT_NAME==='schedule'&&!(ukHour===9&&['Mon','Tue','Wed','Fri'].includes(ukWeekday)||ukHour===15&&ukWeekday==='Wed')){
+ console.log('Outside scheduled UK readiness window; no data changes.');process.exit(0);
+}
 const token=process.env.NOTION_TOKEN;
 if(!token) throw Error('PK_NOTION_READ_TOKEN is not configured');
 const db=process.env.NOTION_DATABASE_ID||'d915e3ac-8612-4454-ad05-a55f5534277a';
