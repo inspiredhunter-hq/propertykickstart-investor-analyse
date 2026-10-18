@@ -118,6 +118,16 @@ body>header,body>.wrap,body>.print-page-note{display:none!important}
 .ps-valueitem strong{display:block;color:#30204e;margin-bottom:2px}
 .ps-selected{margin-top:6px;padding:6px 9px;background:#f3eef9;border-radius:5px;font-size:8.5pt}.ps-selected div{margin-top:3px;white-space:pre-wrap;overflow-wrap:anywhere}.decision-options{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}.decision-options label{display:flex;align-items:center;gap:6px;font-weight:600}.decision-options input{accent-color:#532b81}.ps-disclaimer{font-size:8.35pt;line-height:1.27}.ps-disclaimer p{margin:0 0 6px}
 .ps-page .ps-box{margin:3px 0}
+/* Page two: fit the complete statutory information; never suppress the disclaimer. */
+.ps-page:nth-child(2) .ps-box{margin:2px 0;padding:5px 8px}
+.ps-page:nth-child(2) .ps-table td{padding:2px 0;line-height:1.12}
+.ps-page:nth-child(2) .ps-valueitem{padding:3px 6px}
+.ps-page:nth-child(2) .ps-valuevertical .ps-valueitem{padding:3px 6px}
+.ps-page:nth-child(2) .ps-selected{margin-top:3px;padding:4px 6px}
+.ps-page:nth-child(2) .ps-foot{margin-top:3mm}
+.ps-page:nth-child(2) .ps-box:last-of-type{break-inside:auto;page-break-inside:auto}
+.ps-page:nth-child(2) .ps-disclaimer{font-size:7.8pt;line-height:1.17}
+.ps-page:nth-child(2) .ps-disclaimer p{margin:0 0 3px;break-inside:auto}
 }
 </style></head><body><header><div class="eyebrow">Property Kickstart · SMART Deal of the Week</div><h1 id="assessmentTitle">£4,400 a month in rent. What could an investor keep?</h1><p id="assessmentSubtitle">HA-SE-3FTDU · Maidstone · South East · Six-bedroom semi-detached</p></header><main class="wrap"><div id="propertyReferenceWrap" class="property-ref" hidden><label for="propertyReference">Property address or reference (required for another property)</label><input id="propertyReference" type="text" autocomplete="off" placeholder="Enter a street, postcode, full address or listing reference" maxlength="240"/><button id="returnToPrint" type="button" hidden aria-label="Return to the print section" title="Return to print">🖨 Return to print</button><div id="propertyReferencePrint" class="printed-ref"></div><small>This identification appears on your printed or saved assessment.</small><p id="addressError" role="alert" hidden style="color:#a51b27;font-weight:700;margin:7px 0 0">Enter a property address or reference before printing this assessment.</p></div>
 <div class="notice"><strong>Start with your own investment criteria.</strong> Know your <strong>SCORE</strong> before you assess the <strong>VALUE</strong>. <span id="assessmentIntro">Explore whether Maidstone could fit the capital you want to commit</span>, the income you want to generate and how changes in mortgage interest rates could affect your monthly cash flow. <span id="suppliedFiguresNote">The published asking price and stated rent are supplied figures.</span> All other financial figures are illustrative estimates based on the assumptions shown, not guaranteed outcomes.</div>
