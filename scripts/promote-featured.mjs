@@ -29,6 +29,7 @@ async function notionQuery(){
 const all=await notionQuery();
 const eligible=[];
 for(const [code,p] of Object.entries(manifest.properties)){
+ if(p.publicationRoute!=='standard_smart_deal'){console.log(code+': excluded from Thursday analyser: not an explicitly registered standard SMART Deal');continue}
  if(!p.contentPageId){console.log(code+': not registered for automatic promotion');continue}
  const rec=all.find(x=>x.id.replaceAll('-','')===p.contentPageId.replaceAll('-',''));
  if(!rec){console.log(code+': linked CL record not found');continue}
@@ -38,6 +39,8 @@ for(const [code,p] of Object.entries(manifest.properties)){
  const date=propertyDate(x['Published Date'])||propertyDate(x['Publication Date']);
  const article=x['Article URL']?.url||x['Newsletter URL']?.url;
  const source=x['Source Deal']?.relation||[];
+ const title=plain(x['Content Title']);
+ if(!/SMART Deal of the Week/i.test(title)||/hotlist|hotlead/i.test(title)){console.log(code+': Hotlist/nonstandard article excluded from featured analyser');continue}
  if(status!=='2. Published'||!approved||!date||date>ukDate||!article||!/^https:\/\/www\.linkedin\.com\//.test(article)||source.length!==1){
  console.log(code+': publication gate incomplete: '+JSON.stringify({status,approved,date,article:!!article,sourceCount:source.length}));continue}
  if(p.availability!=='verified_available'||p.releaseApproved!==true){console.log(code+': release/availability gate incomplete');continue}
