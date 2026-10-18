@@ -10,7 +10,8 @@
       "availability": "unconfirmed",
       "reference": "https://app.notion.com/p/3f92aad7d30e810386c6dd93d941640c",
       "contentPageId": "3f92aad7d30e810386c6dd93d941640c",
-      "releaseApproved": false
+      "releaseApproved": false,
+      "publicationRoute": "standard_smart_deal"
     }
   },
   "gates": {
@@ -19,6 +20,7 @@
     "requireApproved": true,
     "requirePublishedDate": true,
     "requirePrebuiltPropertyPage": true,
-    "requireAvailabilityCheck": true
+    "requireAvailabilityCheck": true,
+    "requireStandardSmartDealRoute": true
   }
 }
