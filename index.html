@@ -60,6 +60,7 @@
 .actions [data-preset].is-active{background:var(--purple);color:white;border-color:var(--purple)}
 #printAssessment[aria-disabled="true"]{opacity:.45;cursor:not-allowed}
 #printAssessment[aria-disabled="false"]{opacity:1;cursor:pointer}
+#returnToPrint{position:fixed;right:16px;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:100;box-shadow:0 5px 22px #25173d50;border-radius:30px;background:#532b81;color:white;padding:12px 15px;align-items:center;gap:7px;font-size:14px}#returnToPrint[hidden]{display:none!important}@media print{#returnToPrint{display:none!important}}
 @media print{.cashrow{break-inside:avoid}.scenario{break-inside:avoid}}
 
 /* ICR result always stays beside its heading; detail is optional. */
@@ -81,11 +82,11 @@
 </style><style id="print-summary-style">
 #printSummary{display:none}
 @media print{
-@page{size:A4;margin:0}
+@page{size:A4;margin:12mm 0}
 html,body{padding:0!important;margin:0!important;background:white!important}
 body>header,body>.wrap,body>.print-page-note{display:none!important}
 #printSummary{display:block!important;width:210mm;font-family:Arial,Helvetica,sans-serif;color:#182535;font-size:9pt;line-height:1.24;background:white}
-.ps-page{position:relative;width:210mm;height:290mm;padding:13mm 15mm 14mm;overflow:hidden;page-break-after:always;break-after:page}
+.ps-page{position:relative;width:100%;height:auto;min-height:0;padding:0 15mm;overflow:visible;page-break-after:always;break-after:page}
 .ps-page:last-child{page-break-after:auto;break-after:auto}
 .ps-top{border-bottom:3px solid #ed8b32;padding:0 0 7px;margin-bottom:9px}
 .ps-kicker{font-size:8pt;letter-spacing:1.1px;color:#532b81;font-weight:bold}
@@ -101,7 +102,7 @@ body>header,body>.wrap,body>.print-page-note{display:none!important}
 .ps-metric{border:1px solid #d8dde6;border-radius:6px;padding:7px}
 .ps-metric span{display:block;color:#505c70;font-size:7.9pt}.ps-metric strong{display:block;color:#532b81;font-size:14pt}
 .ps-label{font-weight:bold;color:#32224c}.ps-small{font-size:8pt;color:#566276}.ps-note{white-space:pre-wrap;overflow-wrap:anywhere}
-.ps-foot{position:absolute;bottom:7mm;left:15mm;right:15mm;border-top:1px solid #b8bfc9;padding-top:3px;font-size:7pt;color:#505c70;display:flex;justify-content:space-between;gap:10px}
+.ps-foot{position:static;margin-top:10mm;border-top:1px solid #b8bfc9;padding-top:3px;font-size:7pt;color:#505c70;display:flex;justify-content:space-between;gap:10px}
 .ps-pill{display:inline-block;background:#f3eef9;padding:4px 6px;border-radius:5px;color:#532b81;font-weight:700}
 .ps-valuegrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .ps-valuevertical{grid-template-columns:1fr;gap:3px}
@@ -228,14 +229,19 @@ e('resetAllTop').addEventListener('click',resetAll);
 
 document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click',()=>{const p=b.dataset.preset;if(p==='base'){resetAll();return;}const vals=p==='stress'?[75,8,100,0]:p==='severe'?[75,8,90,2500]:[0,6,100,0];['ltv','rate','income','extra'].forEach((k,i)=>e(k).value=vals[i]);render();setActivePreset(p);}));
 updateOutlook();updateManagementMode();render();const base=calculate(75,6,1,0,DEFAULT),s=calculate(75,8,1,0,DEFAULT),cash=calculate(0,6,1,0,DEFAULT);if(base.cash!==206199||base.profit!==26979||s.profit!==18729||cash.cash!==611200)console.error('Regression failure',{base,s,cash});
-</script><div aria-hidden="true" class="print-page-note">Property Kickstart | Illustrative calculations only. Not financial, mortgage, tax or legal advice. Full disclaimer at the end of this assessment.</div><script>
+</script><button id="returnToPrint" type="button" hidden aria-label="Return to the print section" title="Return to print">🖨 Return to print</button><div aria-hidden="true" class="print-page-note">Property Kickstart | Illustrative calculations only. Not financial, mortgage, tax or legal advice. Full disclaimer at the end of this assessment.</div><script>
 (function(){
  const checkbox=document.getElementById('adviceAcknowledgement');
  const printButton=document.getElementById('printAssessment');
  if(!checkbox||!printButton)return;
+ const returnButton=document.getElementById('returnToPrint');let pendingReturn=false;
  const update=()=>{const changed=(Math.abs(Number(document.getElementById('priceInput').value)-550000)>.01||Math.abs(Number(document.getElementById('rentInput').value)-52800)>.01);const hasRef=!!document.getElementById('propertyReference').value.trim();const hasDecision=!!document.querySelector('input[name="investorDecision"]:checked');const ready=checkbox.checked&&(!changed||hasRef)&&hasDecision;printButton.removeAttribute('disabled');printButton.setAttribute('aria-disabled',String(!ready));printButton.classList.toggle('print-ready',ready);};window.updatePrintReady=update;
+ const refInput=document.getElementById('propertyReference');
+ const syncReturn=()=>{if(returnButton)returnButton.hidden=!(pendingReturn&&!!refInput.value.trim());};
+ refInput?.addEventListener('input',()=>{syncReturn();update();});
+ returnButton?.addEventListener('click',()=>{if(returnButton)returnButton.hidden=true;pendingReturn=false;document.getElementById('printAssessment').scrollIntoView({behavior:'smooth',block:'center'});});
  document.querySelectorAll('input[name=investorDecision]').forEach(el=>el.addEventListener('change',()=>{document.getElementById('decisionError').hidden=true;update();}));checkbox.addEventListener('change',update);checkbox.addEventListener('input',update);checkbox.addEventListener('click',update);
- printButton.addEventListener('click',()=>{update();const changed=(Math.abs(Number(document.getElementById('priceInput').value)-550000)>.01||Math.abs(Number(document.getElementById('rentInput').value)-52800)>.01);const missing=changed&&!document.getElementById('propertyReference').value.trim();if(missing){document.getElementById('addressError').hidden=false;document.getElementById('propertyReference').focus();document.getElementById('propertyReferenceWrap').scrollIntoView({behavior:'smooth',block:'center'});return;}if(!document.querySelector('input[name=investorDecision]:checked')){document.getElementById('decisionError').hidden=false;document.getElementById('investorDecisionBox').scrollIntoView({behavior:'smooth',block:'center'});return;}if(checkbox.checked){window.makeInvestorPrintSummary?.();window.print();}});
+ printButton.addEventListener('click',()=>{update();const changed=(Math.abs(Number(document.getElementById('priceInput').value)-550000)>.01||Math.abs(Number(document.getElementById('rentInput').value)-52800)>.01);const missing=changed&&!document.getElementById('propertyReference').value.trim();if(missing){pendingReturn=true;syncReturn();document.getElementById('addressError').hidden=false;document.getElementById('propertyReference').focus();document.getElementById('propertyReferenceWrap').scrollIntoView({behavior:'smooth',block:'center'});return;}if(!document.querySelector('input[name=investorDecision]:checked')){document.getElementById('decisionError').hidden=false;document.getElementById('investorDecisionBox').scrollIntoView({behavior:'smooth',block:'center'});return;}if(checkbox.checked){pendingReturn=false;syncReturn();window.makeInvestorPrintSummary?.();window.print();}});
  update();
 })();
 </script><div id="printSummary" aria-hidden="true"></div>
