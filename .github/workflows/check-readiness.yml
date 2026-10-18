@@ -35,7 +35,13 @@ jobs:
           TITLE="SMART Deal readiness - upcoming issue"
           EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number,title --jq '.[] | select(.title == "SMART Deal readiness - upcoming issue") | .number' | head -1)
           if [ -z "$EXISTING" ]; then
-            gh issue create --title "$TITLE" --body-file reports/latest-readiness.md
+            gh issue create --title "$TITLE" --body-file reports/latest-readiness.md --assignee inspiredhunter
           else
-            gh issue edit "$EXISTING" --body-file reports/latest-readiness.md
+            gh issue edit "$EXISTING" --add-assignee inspiredhunter
+            CURRENT=$(gh issue view "$EXISTING" --json body --jq .body)
+            NEW=$(cat reports/latest-readiness.md)
+            if [ "$CURRENT" != "$NEW" ]; then
+              gh issue edit "$EXISTING" --body-file reports/latest-readiness.md
+              gh issue comment "$EXISTING" --body "SMART Deal readiness changed. Review the updated checklist in this issue."
+            fi
           fi
