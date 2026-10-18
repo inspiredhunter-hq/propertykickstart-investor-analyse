@@ -20,8 +20,8 @@ check(rel(p['Source Deal']).length===1,'Source Deal must link to one Pipeline re
 check(p['Approved?']?.checkbox===true,'Final editorial Approved? not confirmed');
 check(p['Content Approval']?.select?.name==='3. Content approved','Content Approval is not approved');
 check(!!(p['Article URL']?.url||p['Newsletter URL']?.url),'Generated LinkedIn article URL not recorded');
-check(!!(p['Scheduled Date']?.date?.start||p['Publication Date']?.date?.start),'Scheduled publication date not recorded');
-check(!!(p['Publishing Time (UK)']?.rich_text?.length||p['Scheduled Time (UK)']?.rich_text?.length),'Scheduled UK time not recorded (field schema may require enhancement)');
+check(!!p['Scheduled Date']?.date?.start,'Scheduled publication date not recorded');
+check(!!p['Scheduled Date']?.date?.start?.includes('T'),'Scheduled publication UK time not recorded: use the existing Scheduled Date field with a time and Europe/London timezone');
 check(p['Assets Complete']?.checkbox===true,'Assets Complete not verified');
 check(p['CL Complete']?.checkbox===true,'Content Library complete not verified');
 const reg=Object.values(manifest.properties).find(x=>x.contentPageId?.replaceAll('-','')===item.id.replaceAll('-',''));
