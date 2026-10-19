@@ -1,0 +1,44 @@
+{
+  "propertyCode": "HA-NW-9JSFK",
+  "pipelinePageId": "3f42aad7d30e81a59942ed46cc12c856",
+  "legacyId": "PKD-112",
+  "strategy": "Housing Association",
+  "town": "Preston",
+  "region": "North West",
+  "askingPriceGBP": 290000,
+  "grossRentMonthlyGBP": 2319,
+  "grossRentAnnualGBP": 27828,
+  "depositGBP": 72500,
+  "totalCapitalGBP": 106359,
+  "loanGBP": 217500,
+  "annualOperatingCostsGBP": {
+    "insurance": 285,
+    "compliance": 120,
+    "accounting": 300,
+    "boilerProvision": 366,
+    "total": 1071
+  },
+  "monthlyOperatingCostsGBP": 89.25,
+  "annualNetBeforeFinanceGBP": 26757,
+  "interestRateBasePercent": 6,
+  "netProfitAnnualAt6PercentGBP": 13707,
+  "roiAt6Percent": 12.89,
+  "availability": {
+    "pipelineStatus": "Available",
+    "sellerVerifiedOn": null
+  },
+  "source": {
+    "spreadsheet": "https://docs.google.com/spreadsheets/d/1lhOpKbAkwB_jBS5W8FMCYpr_s82Yz6XCX9uT8AYj6k0/edit",
+    "tab": "Deal Register",
+    "row": 24
+  },
+  "stage": "financial_inputs_staged_not_published",
+  "checks": {
+    "formulaReconciliation": "pilot_row_repaired",
+    "financeQAComplete": false,
+    "layoutQA": false,
+    "printQA": false,
+    "publicationApproved": false
+  },
+  "notes": "Public staging metadata only, not an investor offer. No private address or internal HA model label. Page and PDF not yet ready."
+}
