@@ -5,8 +5,8 @@ import vm from 'node:vm';
 import assert from 'node:assert/strict';
 const near=(a,b,label)=>assert.ok(Math.abs(a-b)<.011,`${label}: ${a} expected ${b}`);
 const properties=[
-  {path:'index.html',rent:52800,price:550000,baselineCapital:206199,baselineMonth:2248},
-  {path:'HA-SE-3FTDU/index.html',rent:52800,price:550000,baselineCapital:206199,baselineMonth:2248},
+  {path:'index.html',rent:52800,price:550000,baselineCapital:206199,baselineMonth:2248.25},
+  {path:'HA-SE-3FTDU/index.html',rent:52800,price:550000,baselineCapital:206199,baselineMonth:2248.25},
   {path:'HA-NW-9JSFK/index.html',rent:27828,price:290000}
 ];
 for (const p of properties){
