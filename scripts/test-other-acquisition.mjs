@@ -60,3 +60,11 @@ assert.match(ha, /\['Mortgage broker',loanpct\?money\(val\('brokerInput'\)\):'£
  'mortgage broker fee must be shown conditionally on printable acquisition section');
 assert.match(ha, /\['Management fee',money\(mgmt\)\]/,'HA PDF must include editable management');
 console.log('PASS staged HA: visible acquisition assumptions, asking price and PDF reconciliation');
+
+assert.doesNotMatch(ha,/function updateBrokerDefault\(/,
+  'HA draft must not silently insert an unverified broker fee from asking-price changes');
+assert.doesNotMatch(ha,/if\(id==='priceInput'\)updateBrokerDefault\(\)/,
+  'HA asking-price edits must not change explicitly entered broker costs');
+assert.match(ha,/Bridge advance exceeds estimated purchase costs/,
+  'HA bridge route must not display a misleading zero when borrowing exceeds capital');
+console.log('PASS staged HA: no invented broker costs and bridge advance validation');
