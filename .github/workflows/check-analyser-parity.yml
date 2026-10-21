@@ -11,6 +11,7 @@ on:
       - 'scripts/test-management-interactions.mjs'
       - 'scripts/test-other-acquisition.mjs'
       - 'scripts/test-ha-financial-regression.mjs'
+      - 'scripts/test-browser-smoke.mjs'
       - '.github/workflows/check-analyser-parity.yml'
   workflow_dispatch:
 permissions:
@@ -33,3 +34,9 @@ jobs:
         run: node scripts/test-other-acquisition.mjs
       - name: Verify Maidstone SMART, Maidstone HA and Preston financing scenarios
         run: node scripts/test-ha-financial-regression.mjs
+      - name: Install Chromium for real-browser smoke checks
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Verify analyser on mobile Chromium and print media
+        run: node scripts/test-browser-smoke.mjs
