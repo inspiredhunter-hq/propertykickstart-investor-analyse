@@ -9,6 +9,7 @@ on:
       - 'scripts/check-analyser-parity.mjs'
       - 'scripts/test-analyser-calculations.mjs'
       - 'scripts/test-management-interactions.mjs'
+      - 'scripts/test-other-acquisition.mjs'
       - '.github/workflows/check-analyser-parity.yml'
   workflow_dispatch:
 permissions:
@@ -27,3 +28,5 @@ jobs:
         run: node scripts/test-analyser-calculations.mjs
       - name: Verify managed, negotiated and self-managed controls
         run: node scripts/test-management-interactions.mjs
+      - name: Verify optional Other acquisition costs across all strategies
+        run: node scripts/test-other-acquisition.mjs
