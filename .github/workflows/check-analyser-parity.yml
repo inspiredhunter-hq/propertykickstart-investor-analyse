@@ -7,6 +7,7 @@ on:
       - 'HMO-NW-2S98D/**'
       - 'HA-*/**'
       - 'scripts/check-analyser-parity.mjs'
+      - 'scripts/test-analyser-calculations.mjs'
       - '.github/workflows/check-analyser-parity.yml'
   workflow_dispatch:
 permissions:
@@ -21,3 +22,5 @@ jobs:
           node-version: '22'
       - name: Verify public pages and staged analyser fields
         run: node scripts/check-analyser-parity.mjs
+      - name: Verify financial calculations and managed vs self-managed assumptions
+        run: node scripts/test-analyser-calculations.mjs
