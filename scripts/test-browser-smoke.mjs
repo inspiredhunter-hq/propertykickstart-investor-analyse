@@ -52,6 +52,23 @@ for(const item of cases){
  await page.emulateMedia({media:'print'});
  const printDisplay=await page.evaluate(()=>getComputedStyle(document.body).display);
  assert.notEqual(printDisplay,'none','print mode does not hide body');
+ if(item.gate==='ha'){
+   // Generate the same summary that the real print button builds after acknowledgement.
+   await page.locator('#adviceAcknowledgement').check();
+   const decision=page.locator('input[name="investorDecision"]');
+   await decision.first().check();
+   await page.evaluate(()=>window.makeInvestorPrintSummary());
+   const summary=await page.locator('#printSummary').innerHTML();
+   assert.ok(summary.includes('Estimated buying costs'),`${item.path}: HA print missing buying costs`);
+   assert.ok(summary.includes('Other buying costs')||summary.includes('Other acquisition costs'),
+     `${item.path}: HA print missing optional acquisition cost`);
+   const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+   const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
+   assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
+   const pages=Number(meta.stdout.match(/^Pages:\\s*(\\d+)/m)?.[1]);
+   assert.ok(Number.isInteger(pages)&&pages>0,`${item.path}: invalid PDF page count ${pages}`);
+   console.log(`MEASURE HA PDF ${item.path}: ${pages} A4 pages`);
+ }
  if(item.gate==='btl'||item.gate==='hmo'){
    const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
    const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
