@@ -34,6 +34,31 @@ for(const item of cases){
  assert.equal(await page.locator(other).inputValue(),'','Other costs start blank');
  const output=item.gate==='ha'?'#capitalSummary':'#capitalOut';
  const capital=await page.locator(output).textContent();
+ // ACT-838 / 21 October 2026 authoritative Deal Register snapshot at 75% LTV and 6%.
+ // The public SMART homepage and Maidstone property route deliberately share a baseline.
+ const registerBaseline={
+   'index.html':{capital:206199,annual:26979,roi:13.083962579837924},
+   'HA-SE-3FTDU/index.html':{capital:206199,annual:26979,roi:13.083962579837924},
+   'HA-NW-9JSFK/index.html':{capital:106359,annual:13707,roi:12.88748483908273},
+   'BTL-NE-WLETS/index.html':{capital:50649,annual:2848,roi:5.623013287527888},
+   'HMO-NW-2S98D/index.html':{capital:80499,annual:2718.28,roi:3.376787289283095}
+ };
+ const baseline=registerBaseline[item.path];
+ if(baseline){
+   const parseMoney=s=>Number(String(s).replace(/[^0-9.-]/g,''));
+   const capActual=parseMoney(capital);
+   assert.ok(Math.abs(capActual-baseline.capital)<=1,
+     `${item.path}: website capital ${capActual} differs from approved Deal Register ${baseline.capital}`);
+   const annualId=item.gate==='ha'?'#annual':'#profitOut';
+   const roiId=item.gate==='ha'?'#roi':'#roiOut';
+   const annualActual=parseMoney(await page.locator(annualId).textContent());
+   const roiActual=parseMoney(await page.locator(roiId).textContent());
+   assert.ok(Math.abs(annualActual-baseline.annual)<=1.01,
+     `${item.path}: annual net ${annualActual} differs from Deal Register ${baseline.annual}`);
+   assert.ok(Math.abs(roiActual-baseline.roi)<0.015,
+     `${item.path}: ROI ${roiActual}% differs from Deal Register ${baseline.roi}%`);
+   console.log(`PASS Deal Register parity ${item.path}: capital £${capActual}, annual net £${annualActual}, ROI ${roiActual}%`);
+ }
  await page.locator(other).fill('975',{timeout:5000});
  await page.locator(other).dispatchEvent('input');
  const withOther=await page.locator(output).textContent();
