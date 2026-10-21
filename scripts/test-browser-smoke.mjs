@@ -68,8 +68,12 @@ for(const item of cases){
    const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
    assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
    const pages=Number(meta.stdout.match(/^Pages:\s*(\d+)/m)?.[1]);
-   assert.ok(Number.isInteger(pages)&&pages>0,`${item.path}: invalid PDF page count ${pages}`);
-   console.log(`MEASURE HA PDF ${item.path}: ${pages} A4 pages`);
+   assert.equal(pages,2,`${item.path}: expected 2 A4 PDF pages, received ${pages}`);
+   const extraction=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'});
+   assert.equal(extraction.status,0,`${item.path}: PDF text extraction failed`);
+   assert.match(extraction.stdout,/Other (buying|acquisition) costs/i,`${item.path}: Other costs omitted from actual PDF`);
+   assert.match(extraction.stdout,/975/,`${item.path}: edited £975 was not printed`);
+   console.log(`PASS HA PDF ${item.path}: 2 A4 pages, Other costs and edited £975 printed`);
  }
  if(item.gate==='btl'||item.gate==='hmo'){
    const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
@@ -77,7 +81,11 @@ for(const item of cases){
    assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
    const count=Number(meta.stdout.match(/^Pages:\s*(\d+)/m)?.[1]);
    assert.equal(count,2,`${item.path}: expected two printable A4 pages but got ${count}`);
-   console.log(`PASS ${item.path}: actual A4 investor PDF has exactly ${count} pages`);
+   const extraction=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'});
+   assert.equal(extraction.status,0,`${item.path}: PDF text extraction failed`);
+   assert.match(extraction.stdout,/Other acquisition costs/i,`${item.path}: Other acquisition costs absent from PDF`);
+   assert.match(extraction.stdout,/975/,`${item.path}: edited £975 was not included on PDF`);
+   console.log(`PASS ${item.path}: 2 A4 pages, Other costs and edited £975 printed`);
  }
  await page.close();
  console.log('PASS real Chromium mobile+print '+item.path);
