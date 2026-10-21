@@ -1,0 +1,23 @@
+name: ACT-882 analyser source checks
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'BTL-NE-WLETS/**'
+      - 'HMO-NW-2S98D/**'
+      - 'HA-*/**'
+      - 'scripts/check-analyser-parity.mjs'
+      - '.github/workflows/check-analyser-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-static-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public pages and staged analyser fields
+        run: node scripts/check-analyser-parity.mjs
