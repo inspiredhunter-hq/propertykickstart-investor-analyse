@@ -47,3 +47,18 @@ for (const [name,path] of pages.filter(([,p])=>p === 'index.html' || p.startsWit
   console.log(`PASS: ${name} HA-compatible section checks`);
 }
 console.log('Static source checks passed. NOT a live deploy, financial, visual, owner-login or unauthorised-access test.');
+
+// Stage-only HA test: preserve unpublished status and prevent exposing internal models.
+const stagedHa = read('staging/ha-model-2/analyser-review.html');
+assert.doesNotMatch(stagedHa, /HA Model 2|Model B/i,
+  'HA staging draft must not leak internal business model taxonomy');
+for (const section of [
+  '2. Acquisition and finance illustration',
+  '4. Illustrative Investment returns',
+  '5. Income Target Comparison',
+  '6. Stress tests and financing scenarios',
+  '7. VALUE',
+]) assert.ok(stagedHa.includes(section), `HA staging: missing ${section}`);
+assert.equal((stagedHa.match(/id="incomeComparison"/g)||[]).length,1,
+  'HA staging: dynamic target comparison must be unique');
+console.log('PASS: private HA staging draft uses public-safe labels and shared section order');
