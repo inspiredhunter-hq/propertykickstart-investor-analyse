@@ -10,6 +10,7 @@ on:
       - 'scripts/test-analyser-calculations.mjs'
       - 'scripts/test-management-interactions.mjs'
       - 'scripts/test-other-acquisition.mjs'
+      - 'scripts/test-ha-financial-regression.mjs'
       - '.github/workflows/check-analyser-parity.yml'
   workflow_dispatch:
 permissions:
@@ -30,3 +31,5 @@ jobs:
         run: node scripts/test-management-interactions.mjs
       - name: Verify optional Other acquisition costs across all strategies
         run: node scripts/test-other-acquisition.mjs
+      - name: Verify Maidstone SMART, Maidstone HA and Preston financing scenarios
+        run: node scripts/test-ha-financial-regression.mjs
