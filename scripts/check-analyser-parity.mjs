@@ -51,6 +51,8 @@ for (const [name,path] of pages.filter(([,p])=>p === 'index.html' || p.startsWit
     '6. Stress tests and financing scenarios',
     '7. VALUE',
   ]) assert.ok(html.includes(phrase), `${name}: section missing ${phrase}`);
+  assert.match(html,/id="decisionNotes" rows="6"/,
+    `${name}: the investor needs more space to explain the decision`);
   assert.equal((html.match(/id="incomeComparison"/g)||[]).length,1,
     `${name}: target output should have one target location`);
   console.log(`PASS: ${name} HA-compatible section checks`);
@@ -68,6 +70,8 @@ for (const section of [
   '6. Stress tests and financing scenarios',
   '7. VALUE',
 ]) assert.ok(stagedHa.includes(section), `HA staging: missing ${section}`);
+assert.match(stagedHa,/id="decisionNotes" rows="6"/,
+  'HA stage should provide space for investor decision notes');
 assert.equal((stagedHa.match(/id="incomeComparison"/g)||[]).length,1,
   'HA staging: dynamic target comparison must be unique');
 console.log('PASS: private HA staging draft uses public-safe labels and shared section order');
