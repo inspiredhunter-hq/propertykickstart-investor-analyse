@@ -30,7 +30,7 @@ for(const item of cases){
    await page.locator('#pkAccept').check();
    await page.locator('#pkReveal').click();
  }
- if(item.gate==='btl'){
+ if(item.gate==='btl'||item.gate==='hmo'){
    const info=page.locator('details.info-tip');
    assert.equal(await info.count(),3,'three BTL help icons must be interactive');
    for(let i=0;i<3;i++){
@@ -41,8 +41,10 @@ for(const item of cases){
      await detail.locator('summary').click();
      assert.equal(await detail.evaluate(el=>el.open),false,'second tap must close help');
    }
-   assert.equal(await page.locator('.risk-highlight').count(),1,'unlocked investor risk must stand out');
-   assert.equal((await page.locator('body').innerText()).includes('Important considerations:'),false,'remove rejected notice');
+   if(item.gate==='btl'){
+     assert.equal(await page.locator('.risk-highlight').count(),1,'unlocked investor risk must stand out');
+     assert.equal((await page.locator('body').innerText()).includes('Important considerations:'),false,'remove rejected notice');
+   }
    console.log('PASS all 3 interactive information icons and prominent risk notice');
  }
  const other=item.gate==='ha'?'#otherBuyingInput':'#otherAcquisition';
