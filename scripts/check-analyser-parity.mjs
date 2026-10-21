@@ -15,6 +15,8 @@ for (const [name,path] of pages) {
   assert.match(html, /<!doctype html>/i, `${name}: HTML document required`);
   assert.match(html, /Property Kickstart Investor Analyser/i, `${name}: investor analyser title required`);
   assert.match(html, /investment risk|investments can go down/i, `${name}: risk disclosure required`);
+  // Management has only two valid options, not a third 'Hands-off' tier.
+  assert.doesNotMatch(html, /Hands-off/i,`${name}: unsupported Hands-off management wording`);
   assert.doesNotMatch(html, /private\.deals\.propertykickstart\.co\.uk/i,
     `${name}: never expose owner-only URL in public HTML`);
   assert.doesNotMatch(html, /Show my analysis tools|Hide my analysis tools/i,
@@ -61,6 +63,7 @@ console.log('Static source checks passed. NOT a live deploy, financial, visual, 
 
 // Stage-only HA test: preserve unpublished status and prevent exposing internal models.
 const stagedHa = read('staging/ha-model-2/analyser-review.html');
+assert.doesNotMatch(stagedHa,/Hands-off/i,'HA draft: unsupported management tier');
 assert.doesNotMatch(stagedHa, /HA Model 2|Model B/i,
   'HA staging draft must not leak internal business model taxonomy');
 for (const section of [
