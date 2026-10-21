@@ -29,3 +29,13 @@ Deal Clinic attendees and all public viewers get the exact same public investor 
 
 ## Current execution state
 Architecture decision approved and recorded in ACT-882. This document is implementation design only. No private service deployed; no authentication configured; no owner-only protection verified. Do not merge/release unfinished PR #2 solely because this file exists.
+
+## Owner-only reveal for Deal Clinic presentation (approved 21 October 2026)
+
+- Authenticated Hanna sees the *identical public analyser by default*, not an enhanced dashboard by default.
+- The owner-only action **Show my analysis tools** reveals a private panel on click. **Hide my analysis tools** restores precisely the audience-facing view.
+- The reveal control and private panel are excluded entirely from all public HTML and assets, and excluded from default print/PDF. The private panel is never merely visually hidden on the public site.
+- Attendees must not learn of the private panel, privileged link or controls through public page labels, code, metadata, print content, hover text or UI. Hanna may later choose to send public property links, but this is not an automatic publication or link-sharing instruction.
+- Maidstone root `index.html` Section 5 (current repository): “Explore different scenarios” has proportion of stated rent modelled (70–100%), additional annual running costs (slider and exact amount), reset to defaults, 8% interest stress, Severe sensitivity and Cash route; adjacent projected-outcome card recalculates. Owner private panel must preserve these behaviours and include an adjustable interest-rate stress feature. Separate the owner's stress functionality from ordinary public acquisition assumptions and legally necessary risk disclosures.
+- One finance engine and one canonical property presentation must power both audiences; owner-only section adds features, not alternative figures.
+- Do not release public removal before authenticated owner-side parity and direct-origin denial tests are successful. Existing SMART Deal homepage and property-code routes must not be overwritten by migration.
