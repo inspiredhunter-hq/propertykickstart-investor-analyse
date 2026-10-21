@@ -1,0 +1,43 @@
+name: ACT-882 analyser release checks
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'BTL-NE-WLETS/**'
+      - 'HMO-NW-2S98D/**'
+      - 'HA-*/**'
+      - 'scripts/check-analyser-parity.mjs'
+      - 'scripts/test-analyser-calculations.mjs'
+      - 'scripts/test-management-interactions.mjs'
+      - 'scripts/test-other-acquisition.mjs'
+      - 'scripts/test-ha-financial-regression.mjs'
+      - 'scripts/test-browser-smoke.mjs'
+      - '.github/workflows/check-analyser-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate-static-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public pages and staged analyser fields
+        run: node scripts/check-analyser-parity.mjs
+      - name: Verify financial calculations and managed vs self-managed assumptions
+        run: node scripts/test-analyser-calculations.mjs
+      - name: Verify managed, negotiated and self-managed controls
+        run: node scripts/test-management-interactions.mjs
+      - name: Verify optional Other acquisition costs across all strategies
+        run: node scripts/test-other-acquisition.mjs
+      - name: Verify Maidstone SMART, Maidstone HA and Preston financing scenarios
+        run: node scripts/test-ha-financial-regression.mjs
+      - name: Install Chromium for real-browser smoke checks
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          command -v pdfinfo >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y poppler-utils)
+      - name: Verify analyser on mobile Chromium and print media
+        run: node scripts/test-browser-smoke.mjs
