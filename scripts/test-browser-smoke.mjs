@@ -65,7 +65,7 @@ for(const item of cases){
    const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
    const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
    assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
-   const pages=Number(meta.stdout.match(/^Pages:\\s*(\\d+)/m)?.[1]);
+   const pages=Number(meta.stdout.match(/^Pages:\s*(\d+)/m)?.[1]);
    assert.ok(Number.isInteger(pages)&&pages>0,`${item.path}: invalid PDF page count ${pages}`);
    console.log(`MEASURE HA PDF ${item.path}: ${pages} A4 pages`);
  }
