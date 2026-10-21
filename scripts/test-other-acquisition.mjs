@@ -29,6 +29,7 @@ assert.doesNotMatch(ha,/<tr hidden><td>Other <div/, 'HA stage additional acquisi
 assert.match(ha,/const cash=c\.price-loan\+c\.stamp\+c\.legal\+c\.otherBuying\+pkfee/);
 assert.match(ha,/const initialCapital=c\.price\+c\.stamp\+c\.legal\+c\.otherBuying\+/);
 const body=ha.match(/function calculate\(ltv,rate,incomeRatio=1,other=0,c=selected\(\)\)\{([\s\S]*?)\}\nfunction render/)?.[1];
+assert.match(ha,/\['Other acquisition costs',money\(val\('otherBuyingInput'\)\)\]/,'HA investor printout must show optional acquisition costs');
 assert.ok(body,'HA formula not found');
 const calculate=vm.runInNewContext('(function(ltv,rate,incomeRatio,other,c){'+body+'})');
 const c={price:80000,rent:11400,stamp:4000,legal:2500,otherBuying:0,boiler:366,buildings:285,otherOwner:0};
