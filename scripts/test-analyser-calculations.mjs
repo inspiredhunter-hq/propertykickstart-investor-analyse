@@ -64,6 +64,15 @@ for (const caseData of cases) {
   near(managed.profit,golden.annual,'independent golden cashflow');
   near(managed.profit,managed.rent-managed.costs-managed.interest,'managed net return');
   near(managed.roi,managed.profit/managed.capital*100,'cash ROI');
+  // Blank, editable acquisition field starts at £0 and affects capital + ROI only.
+  near(Number(inputs.get('otherAcquisition').value),0,'blank other acquisition cost');
+  const initialRoi=managed.roi;
+  set('otherAcquisition',975);
+  const withExtra=getCompute();
+  near(withExtra.capital,managed.capital+975,'other acquisition changes capital');
+  near(withExtra.profit,managed.profit,'other acquisition leaves annual operating cashflow');
+  assert.ok(withExtra.roi<initialRoi,'other acquisition lowers ROI');
+  set('otherAcquisition',0);
   const monthlyManaged=managed.profit/12;
   // Self-managed must remove management expense and improve net cashflow accordingly.
   elements.find(x=>x.dataset.cost==='0').value=0;
@@ -84,6 +93,6 @@ for (const caseData of cases) {
   set('target',1000);
   near(stressed.profit/12-Number(inputs.get('target').value),stressed.profit/12-1000,'income target');
   console.log(`PASS ${caseData.path}: cash, leveraged, managed, self-managed, returns and stresses`);
-  checks+=18;
+  checks+=22;
 }
 console.log(`ACT-882: ${checks} numerical checks passed for 2 property strategies.`);
