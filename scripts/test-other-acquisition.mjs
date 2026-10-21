@@ -50,3 +50,13 @@ assert.equal(managed.ops-base.ops,1140,'annual management cost included in landl
 assert.equal(managed.profit-base.profit,-1140,'management cost reduces annual net return');
 assert.match(ha,/\['Management fee',money\(mgmt\)\]/,'management included in printed HA assessment');
 console.log('PASS staged HA: cash, borrowing fees, survey, management, ROI and investor PDF');
+
+assert.doesNotMatch(ha, /<tr hidden><td>(Survey|Mortgage broker|Mortgage arrangement|<strong>Management<\/strong>)/,
+ 'staged HA investor must be able to see acquisition and management assumptions');
+assert.doesNotMatch(ha, /purchase price/i, 'investor-facing HA draft should refer to asking price');
+assert.match(ha, /id="brokerInput"[^>]*value="0"/, 'broker default must be zero until specifically entered');
+assert.match(ha, /id="arrangementInput"[^>]*value="0"/, 'arrangement default must be zero until specifically entered');
+assert.match(ha, /\['Mortgage broker',loanpct\?money\(val\('brokerInput'\)\):'£0'\]/,
+ 'mortgage broker fee must be shown conditionally on printable acquisition section');
+assert.match(ha, /\['Management fee',money\(mgmt\)\]/,'HA PDF must include editable management');
+console.log('PASS staged HA: visible acquisition assumptions, asking price and PDF reconciliation');
