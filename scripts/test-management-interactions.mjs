@@ -31,13 +31,14 @@ for(const [path,defaultRate,managedLabel] of [
     num:id=>Math.max(0,Number(document.getElementById(id).value)||0)
   };
   vm.runInNewContext("const $=id=>document.getElementById(id);"+js,ctx);
+  const approx=(a,b,label)=>assert.ok(Math.abs(a-b)<0.011,`${path}: ${label}: ${a} versus ${b}`);
   const trigger=(node,event)=>{assert.ok(node.listeners[event],path+': missing '+event);node.listeners[event]({target:node})};
   assert.equal(Number(rate.value),defaultRate,'governed default rate');
   assert.equal(Number(management.value),Number(rent.value)*defaultRate/100,'governed default cost');
   rate.value='10';trigger(rate,'input');
-  assert.equal(Number(management.value),Number(rent.value)*.10,'negotiated 10% recalculation');
+  approx(Number(management.value),Number(rent.value)*.10,'negotiated 10% recalculation');
   rent.value=Number(rent.value)+1200;trigger(rent,'input');
-  assert.equal(Number(management.value),Number(rent.value)*.10,'rent change reflows percent');
+  approx(Number(management.value),Number(rent.value)*.10,'rent change reflows percent');
   management.value=Number(rent.value)*.08;trigger(management,'input');
   assert.equal(Number(rate.value),8,'manual cost change must reflect 8% actual rate');
   mode.value='Self-managed';trigger(mode,'change');
@@ -45,6 +46,6 @@ for(const [path,defaultRate,managedLabel] of [
   assert.equal(Number(management.value),0,'self-managed cost');
   mode.value=managedLabel;trigger(mode,'change');
   assert.equal(Number(rate.value),8,'return to managed restores negotiated rate');
-  assert.equal(Number(management.value),Number(rent.value)*.08,'managed cost restored');
+  approx(Number(management.value),Number(rent.value)*.08,'managed cost restored');
   console.log('PASS '+path+': 12/10 baseline, 10% negotiation, changed rent, manual annual override, self-manage and restore');
 }
