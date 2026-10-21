@@ -1,0 +1,34 @@
+name: ACT-882 production analyser acceptance
+on:
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'HA-*/**'
+      - 'BTL-*/**'
+      - 'HMO-*/**'
+      - 'scripts/check-production-browser.mjs'
+      - '.github/workflows/act-882-production-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-public-analysers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          command -v pdfinfo >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y poppler-utils)
+      - name: Check property finances, mobile, help controls and printable PDF
+        run: node scripts/check-production-browser.mjs
+      - name: Keep evidence screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: property-analyser-mobile-qa
+          path: qa-evidence/
+          retention-days: 30
