@@ -53,7 +53,8 @@ for(const item of cases){
  const printDisplay=await page.evaluate(()=>getComputedStyle(document.body).display);
  assert.notEqual(printDisplay,'none','print mode does not hide body');
  if(item.gate==='ha'){
-   // Generate the same summary that the real print button builds after acknowledgement.
+   // The confirmation UI is screen-only: return to screen media before interacting.
+   await page.emulateMedia({media:'screen'});
    await page.locator('#adviceAcknowledgement').check();
    const decision=page.locator('input[name="investorDecision"]');
    await decision.first().check();
@@ -62,6 +63,7 @@ for(const item of cases){
    assert.ok(summary.includes('Estimated buying costs'),`${item.path}: HA print missing buying costs`);
    assert.ok(summary.includes('Other buying costs')||summary.includes('Other acquisition costs'),
      `${item.path}: HA print missing optional acquisition cost`);
+   await page.emulateMedia({media:'print'});
    const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
    const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
    assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
