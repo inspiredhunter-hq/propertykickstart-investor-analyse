@@ -2,6 +2,7 @@
 // ACT-882 real browser smoke tests. Run on a clean CI machine with Playwright/Chromium installed.
 import { chromium } from 'playwright';
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { resolve } from 'node:path';
 
@@ -51,6 +52,14 @@ for(const item of cases){
  await page.emulateMedia({media:'print'});
  const printDisplay=await page.evaluate(()=>getComputedStyle(document.body).display);
  assert.notEqual(printDisplay,'none','print mode does not hide body');
+ if(item.gate==='btl'||item.gate==='hmo'){
+   const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+   const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
+   assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
+   const count=Number(meta.stdout.match(/^Pages:\\s*(\\d+)/m)?.[1]);
+   assert.equal(count,2,`${item.path}: expected two printable A4 pages but got ${count}`);
+   console.log(`PASS ${item.path}: actual A4 investor PDF has exactly ${count} pages`);
+ }
  await page.close();
  console.log('PASS real Chromium mobile+print '+item.path);
 }
