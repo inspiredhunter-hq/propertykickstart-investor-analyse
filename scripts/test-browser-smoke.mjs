@@ -24,7 +24,7 @@ for(const item of cases){
    await page.locator('#ackBox').check();
    await page.locator('#revealBtn').click();
    assert.equal(await page.locator('#analysisContent').isVisible(),true,'BTL analysis unlocked after acknowledgement');
- }else if(item.gate==='hmo'){
+ }else if(item.gate==='hmo' || await page.locator('#pkAccept').count()){
    assert.equal(await page.locator('#pkReveal').isDisabled(),true,'HMO requires per-visit acknowledgement');
    await page.locator('#pkAccept').check();
    await page.locator('#pkReveal').click();
@@ -33,7 +33,7 @@ for(const item of cases){
  assert.equal(await page.locator(other).inputValue(),'','Other costs start blank');
  const output=item.gate==='ha'?'#capitalSummary':'#capitalOut';
  const capital=await page.locator(output).textContent();
- await page.locator(other).fill('975');
+ await page.locator(other).fill('975',{timeout:5000});
  await page.locator(other).dispatchEvent('input');
  const withOther=await page.locator(output).textContent();
  const pounds=s=>Number(s.replace(/[^0-9.-]/g,''));
