@@ -31,6 +31,15 @@ for (const [name,path] of pages.filter(([,path])=>/^(BTL|HMO)-/.test(path))) {
     assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1,
       `${name}: expected exactly one #${id}`);
   }
+  assert.match(html,/id="notes" rows="9" cols="55"/,
+    `${name}: extended investor decision notes should be 9 rows`);
+  assert.match(html,/class="decision-notes"/,
+    `${name}: notes need their own full-width decision area`);
+  assert.match(html,/aria-label="VALUE decision checks"/,
+    `${name}: VALUE checklist missing clear accessible group`);
+  const main=html.slice(html.indexOf('<main '),html.indexOf('</main>')+7);
+  assert.equal((main.match(/<section\\b/g)||[]).length,(main.match(/<\\/section>/g)||[]).length,
+    `${name}: main analyser section tags unbalanced`);
   console.log(`PASS: ${name} staged layout checks`);
 }
 for (const [name,path] of pages.filter(([,p])=>p === 'index.html' || p.startsWith('HA-'))) {
