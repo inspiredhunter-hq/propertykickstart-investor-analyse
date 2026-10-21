@@ -38,7 +38,7 @@ for (const [name,path] of pages.filter(([,path])=>/^(BTL|HMO)-/.test(path))) {
   assert.match(html,/aria-label="VALUE decision checks"/,
     `${name}: VALUE checklist missing clear accessible group`);
   const main=html.slice(html.indexOf('<main '),html.indexOf('</main>')+7);
-  assert.equal((main.match(/<section\\b/g)||[]).length,(main.match(/<\\/section>/g)||[]).length,
+  assert.equal((main.match(/<section\b/g)||[]).length,(main.match(/<\/section>/g)||[]).length,
     `${name}: main analyser section tags unbalanced`);
   console.log(`PASS: ${name} staged layout checks`);
 }
