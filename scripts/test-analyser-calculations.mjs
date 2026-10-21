@@ -55,6 +55,13 @@ for (const caseData of cases) {
   elements.find(x=>x.dataset.cost==='0').value=governedManagement;
   const managed=getCompute();
   near(managed.costs,elements.reduce((sum,x)=>sum+Number(x.value),0),'managed operating costs');
+  // Independent, governed 6% rate golden values. These must not drift silently.
+  const golden = caseData.path.startsWith('HMO')
+    ? {capital:80499,costs:21797.72,annual:2718.28}
+    : {capital:50649,costs:4697,annual:2848};
+  near(managed.capital,golden.capital,'independent golden capital');
+  near(managed.costs,golden.costs,'independent golden operating costs');
+  near(managed.profit,golden.annual,'independent golden cashflow');
   near(managed.profit,managed.rent-managed.costs-managed.interest,'managed net return');
   near(managed.roi,managed.profit/managed.capital*100,'cash ROI');
   const monthlyManaged=managed.profit/12;
@@ -77,6 +84,6 @@ for (const caseData of cases) {
   set('target',1000);
   near(stressed.profit/12-Number(inputs.get('target').value),stressed.profit/12-1000,'income target');
   console.log(`PASS ${caseData.path}: cash, leveraged, managed, self-managed, returns and stresses`);
-  checks+=15;
+  checks+=18;
 }
 console.log(`ACT-882: ${checks} numerical checks passed for 2 property strategies.`);
