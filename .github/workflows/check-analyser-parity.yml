@@ -8,6 +8,7 @@ on:
       - 'HA-*/**'
       - 'scripts/check-analyser-parity.mjs'
       - 'scripts/test-analyser-calculations.mjs'
+      - 'scripts/test-management-interactions.mjs'
       - '.github/workflows/check-analyser-parity.yml'
   workflow_dispatch:
 permissions:
@@ -24,3 +25,5 @@ jobs:
         run: node scripts/check-analyser-parity.mjs
       - name: Verify financial calculations and managed vs self-managed assumptions
         run: node scripts/test-analyser-calculations.mjs
+      - name: Verify managed, negotiated and self-managed controls
+        run: node scripts/test-management-interactions.mjs
