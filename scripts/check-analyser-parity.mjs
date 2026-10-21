@@ -33,4 +33,17 @@ for (const [name,path] of pages.filter(([,path])=>/^(BTL|HMO)-/.test(path))) {
   }
   console.log(`PASS: ${name} staged layout checks`);
 }
+for (const [name,path] of pages.filter(([,p])=>p === 'index.html' || p.startsWith('HA-'))) {
+  const html = read(path);
+  for (const phrase of [
+    '2. Acquisition and finance illustration',
+    '4. Illustrative Investment returns',
+    '5. Income Target Comparison',
+    '6. Stress tests and financing scenarios',
+    '7. VALUE',
+  ]) assert.ok(html.includes(phrase), `${name}: section missing ${phrase}`);
+  assert.equal((html.match(/id="incomeComparison"/g)||[]).length,1,
+    `${name}: target output should have one target location`);
+  console.log(`PASS: ${name} HA-compatible section checks`);
+}
 console.log('Static source checks passed. NOT a live deploy, financial, visual, owner-login or unauthorised-access test.');
