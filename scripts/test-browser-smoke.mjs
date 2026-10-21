@@ -56,7 +56,7 @@ for(const item of cases){
    const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
    const meta=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});
    assert.equal(meta.status,0,`${item.path}: pdfinfo failed: ${meta.stderr}`);
-   const count=Number(meta.stdout.match(/^Pages:\\s*(\\d+)/m)?.[1]);
+   const count=Number(meta.stdout.match(/^Pages:\s*(\d+)/m)?.[1]);
    assert.equal(count,2,`${item.path}: expected two printable A4 pages but got ${count}`);
    console.log(`PASS ${item.path}: actual A4 investor PDF has exactly ${count} pages`);
  }
