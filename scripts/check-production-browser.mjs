@@ -66,7 +66,9 @@ for(const row of golden){
    await page.locator('#reserve').fill('10');
    await page.locator('#propertyCount').fill('2');
    assert.equal(await page.locator('#spend').inputValue(),'178,887','reset planning scenario');
-   assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Record questions for Property Kickstart, information you would like to verify and your next steps (optional)');
+   assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Make your own notes here. These stay in your browser and are not sent to Property Kickstart.');
+   assert.equal(await page.locator('a.question-submit-link').getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8','correct updated Deal Clinic form');
+   assert.equal(await page.locator('code').filter({hasText:'HMO-NW-2S98D'}).count(),1,'property reference visible beside form CTA');
  }
  if(row.rate){
    assert.equal(Number(await page.locator('#managementRate').inputValue()),row.rate,'management baseline');
