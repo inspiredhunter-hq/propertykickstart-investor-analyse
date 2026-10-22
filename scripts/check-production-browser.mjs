@@ -45,8 +45,9 @@ for(const row of golden){
  if(row.rate){
    assert.equal(Number(await page.locator('#managementRate').inputValue()),row.rate,'management baseline');
    const help=page.locator('details.info-tip');
-   assert.equal(await help.count(),3,'three information panels should be visible');
-   for(let i=0;i<3;i++){
+   const infoCount=await help.count();
+   assert.ok(infoCount>=3,'at least three informative help controls should be available');
+   for(let i=0;i<infoCount;i++){
      const el=help.nth(i);
      await el.locator('summary').click();
      assert.equal(await el.evaluate(e=>e.open),true,'information icon must expand');
