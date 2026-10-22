@@ -44,14 +44,18 @@ for(const row of golden){
  assert.ok(Math.abs(actualRoi-row.roi)<=0.015,row.path+': Deal Register ROI mismatch '+actualRoi);
  if(row.type==='hmo'){
    assert.equal(await page.locator('#propertyCount').inputValue(),'2','default portfolio planning should start at 2 properties');
-   assert.equal(await page.locator('#spend').inputValue(),'178887','two property capital inclusive of 10% reserve');
+   assert.equal(await page.locator('#spend').inputValue(),'178,887','two property capital inclusive of 10% reserve');
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','illustrative capital not directly editable');
+   assert.equal(await page.locator('#spend').getAttribute('type'),'text','read-only budget formatted with thousands separators');
+   assert.equal(await page.locator('#incomeGoalEntry').evaluate(e=>e.closest('.grid').children[1].contains(e)),true,'Cash Flow should be in right SCORE column');
+   assert.equal(await page.locator('summary[aria-label="Contingency information"]').count(),1,'reserve tooltip present');
+   assert.equal(await page.locator('#availableOut').textContent(),'£160,998.3','calculated available capital reflects contingency');
    assert.equal(await page.locator('#pkfee').getAttribute('type'),'hidden','fee must not be an editable textbox');
    assert.equal(await page.locator('#pkFeeOut').textContent(),'£5,400','disclosed PK fee unchanged');
    await page.locator('#propertyCount').fill('3');
-   assert.equal(await page.locator('#spend').inputValue(),'268330','property count drives planning capital');
+   assert.equal(await page.locator('#spend').inputValue(),'268,330','property count drives planning capital');
    await page.locator('#reserve').fill('20');
-   assert.equal(await page.locator('#spend').inputValue(),'301872','reserve changes illustrative budget');
+   assert.equal(await page.locator('#spend').inputValue(),'301,872','reserve changes illustrative budget');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');
@@ -61,7 +65,7 @@ for(const row of golden){
    await page.locator('#customBudget').uncheck();
    await page.locator('#reserve').fill('10');
    await page.locator('#propertyCount').fill('2');
-   assert.equal(await page.locator('#spend').inputValue(),'178887','reset planning scenario');
+   assert.equal(await page.locator('#spend').inputValue(),'178,887','reset planning scenario');
    assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Record questions for Property Kickstart, information you would like to verify and your next steps (optional)');
  }
  if(row.rate){
