@@ -66,7 +66,7 @@ for(const row of golden){
    await page.locator('#reserve').fill('10');
    await page.locator('#propertyCount').fill('2');
    assert.equal(await page.locator('#spend').inputValue(),'178,887','reset planning scenario');
-   assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Record questions for Property Kickstart, information you would like to verify and your next steps (optional)');
+   assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Make your own notes here. These stay in your browser and are not sent to Property Kickstart.');
  }
  if(row.rate){
    assert.equal(Number(await page.locator('#managementRate').inputValue()),row.rate,'management baseline');
