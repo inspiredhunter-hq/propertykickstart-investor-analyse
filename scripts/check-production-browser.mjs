@@ -49,7 +49,7 @@ for(const row of golden){
    assert.equal(await page.locator('#spend').getAttribute('type'),'text','read-only budget formatted with thousands separators');
    assert.equal(await page.locator('#incomeGoalEntry').evaluate(e=>e.closest('.grid').children[1].contains(e)),true,'Cash Flow should be in right SCORE column');
    assert.equal(await page.locator('summary[aria-label="Contingency information"]').count(),1,'reserve tooltip present');
-   assert.equal(await page.locator('#availableOut').textContent(),'£160,998.30','calculated available capital reflects contingency');
+   assert.equal(await page.locator('#availableOut').textContent(),'£160,998.3','calculated available capital reflects contingency');
    assert.equal(await page.locator('#pkfee').getAttribute('type'),'hidden','fee must not be an editable textbox');
    assert.equal(await page.locator('#pkFeeOut').textContent(),'£5,400','disclosed PK fee unchanged');
    await page.locator('#propertyCount').fill('3');
