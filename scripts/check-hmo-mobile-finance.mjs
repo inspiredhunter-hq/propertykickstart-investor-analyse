@@ -21,6 +21,7 @@ for(const width of [320,390,430,1280]){
  const guide=await page.locator('.score-guide li').allTextContents();assert.deepEqual(guide.map(t=>t[0]),['S','C','O','R','E']);
  const overflow=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('main input:not([type=hidden]),main select')].filter(e=>{const b=e.getBoundingClientRect(),c=e.closest('.card').getBoundingClientRect();return b.width&& (b.right>c.right+1||b.left<c.left-1)}).map(e=>e.id)}));
  assert.ok(overflow.doc<=width+1,JSON.stringify(overflow));assert.deepEqual(overflow.bad,[]);
+ assert.equal(await page.locator('#targetEntry').isVisible(),false,'exploring must hide the target input');
  const buttons=page.locator('.info-toggle');
  for(let i=0;i<await buttons.count();i++){
   const button=buttons.nth(i);await button.click();
@@ -68,6 +69,7 @@ for(const width of [320,390,430,1280]){
  assert.equal(await page.locator('#profitOut').textContent(),'£6,848.2');
  await page.locator('#involvement').selectOption('Managed HMO');assert.equal(await page.locator('#profitOut').textContent(),'£2,718.28');
  await page.locator('#goalMode').selectOption('explore');
+ assert.equal(await page.locator('#targetEntry').isVisible(),false,'returning to exploring hides target input');
  await page.screenshot({path:`qa-evidence/hmo-review-${width}.png`,fullPage:true});
  if(width===390){
   const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});writeFileSync('qa-evidence/hmo-review.pdf',pdf);
