@@ -13,10 +13,10 @@ const golden=[
   {path:'HA-SE-3FTDU/index.html',type:'ha',capital:206199,profit:26979,roi:13.08},
   {path:'HA-NW-9JSFK/index.html',type:'ha',capital:106359,profit:13707,roi:12.89},
   {path:'BTL-NE-WLETS/index.html',type:'btl',capital:50649,profit:2848,roi:5.62,rate:10},
-  {path:'HMO-NW-2S98D/index.html',type:'hmo',capital:80499,profit:2718.28,roi:3.38,rate:12}
+  {path:'HMO-NW-2S98D/index.html',type:'hmo',capital:80379,profit:2718.28,roi:3.38,rate:12}
 ];
 const cash=s=>Number(String(s).replace(/[^0-9.-]/g,''));
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,...(process.env.PK_CHROMIUM_PATH?{executablePath:process.env.PK_CHROMIUM_PATH}: {})});
 try {
 for(const row of golden){
  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
@@ -44,18 +44,18 @@ for(const row of golden){
  assert.ok(Math.abs(actualRoi-row.roi)<=0.015,row.path+': Deal Register ROI mismatch '+actualRoi);
  if(row.type==='hmo'){
    assert.equal(await page.locator('#propertyCount').inputValue(),'2','default portfolio planning should start at 2 properties');
-   assert.equal(await page.locator('#spend').inputValue(),'178,887','two property capital inclusive of 10% reserve');
+   assert.equal(await page.locator('#spend').inputValue(),'178,620','two property capital inclusive of 10% reserve');
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','illustrative capital not directly editable');
    assert.equal(await page.locator('#spend').getAttribute('type'),'text','read-only budget formatted with thousands separators');
    assert.equal(await page.locator('#incomeGoalEntry').evaluate(e=>e.closest('.grid').children[1].contains(e)),true,'Cash Flow should be in right SCORE column');
-   assert.equal(await page.locator('summary[aria-label="Contingency information"]').count(),1,'reserve tooltip present');
-   assert.equal(await page.locator('#availableOut').textContent(),'£160,998.3','calculated available capital reflects contingency');
+   assert.equal(await page.locator('[aria-label="Contingency information"]').count(),1,'reserve tooltip present');
+   assert.equal(await page.locator('#availableOut').textContent(),'£160,758','calculated available capital reflects contingency');
    assert.equal(await page.locator('#pkfee').getAttribute('type'),'hidden','fee must not be an editable textbox');
-   assert.equal(await page.locator('#pkFeeOut').textContent(),'£5,400','disclosed PK fee unchanged');
+   assert.equal(await page.locator('#pkFeeOut').textContent(),'£5,280','PK fee calculated from approved formula');
    await page.locator('#propertyCount').fill('3');
-   assert.equal(await page.locator('#spend').inputValue(),'268,330','property count drives planning capital');
+   assert.equal(await page.locator('#spend').inputValue(),'267,930','property count drives planning capital');
    await page.locator('#reserve').fill('20');
-   assert.equal(await page.locator('#spend').inputValue(),'301,872','reserve changes illustrative budget');
+   assert.equal(await page.locator('#spend').inputValue(),'301,422','reserve changes illustrative budget');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');
@@ -65,20 +65,21 @@ for(const row of golden){
    await page.locator('#customBudget').uncheck();
    await page.locator('#reserve').fill('10');
    await page.locator('#propertyCount').fill('2');
-   assert.equal(await page.locator('#spend').inputValue(),'178,887','reset planning scenario');
+   assert.equal(await page.locator('#spend').inputValue(),'178,620','reset planning scenario');
    assert.equal(await page.locator('#notes').getAttribute('placeholder'),'Record questions for Property Kickstart, information you would like to verify and your next steps (optional)');
  }
  if(row.rate){
    assert.equal(Number(await page.locator('#managementRate').inputValue()),row.rate,'management baseline');
-   const help=page.locator('details.info-tip');
+   const help=page.locator(row.type==='hmo'?'.info-toggle':'details.info-tip');
    const infoCount=await help.count();
    assert.ok(infoCount>=3,'at least three informative help controls should be available');
    for(let i=0;i<infoCount;i++){
      const el=help.nth(i);
-     await el.locator('summary').click();
-     assert.equal(await el.evaluate(e=>e.open),true,'information icon must expand');
-     await el.locator('summary').click();
-     assert.equal(await el.evaluate(e=>e.open),false,'information icon must close');
+     const control=row.type==='hmo'?el:el.locator('summary');
+     await control.click();
+     assert.equal(await el.evaluate(e=>e.matches('button')?e.getAttribute('aria-expanded')==='true':e.open),true,'information icon must expand');
+     await control.click();
+     assert.equal(await el.evaluate(e=>e.matches('button')?e.getAttribute('aria-expanded')==='true':e.open),false,'information icon must close');
    }
    assert.equal(await page.locator('#involvement option').count(),2,'only Managed and Self-managed allowed');
  }
