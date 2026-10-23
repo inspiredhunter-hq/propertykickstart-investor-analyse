@@ -1,6 +1,12 @@
 name: Generate approved HMO analyser drafts from validated inputs
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/generate-hmo-draft.yml'
+      - 'scripts/new_hmo_analyser.py'
+      - 'tests/test_hmo_generator.py'
+      - 'hmo-inputs/*.json'
   push:
     paths:
       - 'hmo-inputs/*.json'
