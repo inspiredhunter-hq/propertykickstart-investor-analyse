@@ -38,6 +38,14 @@ class GeneratorTests(unittest.TestCase):
   self.assertNotIn("St Helens",html)
   self.assertIn("DRAFT ONLY",result.stdout)
   self.assertNotIn("£220,000",html)
+ def test_canonical_other_acquisition_and_escaped_public_labels(self):
+  d=dict(BASE,headline='<img src=x onerror=alert(1)>',financials=dict(FIELDS,otherAcquisition=1700))
+  result=self.invoke(d)
+  self.assertEqual(result.returncode,0,result.stderr+result.stdout)
+  html=(ROOT/CODE/'index.html').read_text()
+  self.assertIn('value="1700"',html)
+  self.assertIn('&lt;img',html)
+  self.assertNotIn('<img src=x',html)
  def test_rejects_missing_financial_assumptions(self):
   d=dict(BASE,financials={k:v for k,v in FIELDS.items() if k!="cost-7"})
   self.assertNotEqual(self.invoke(d).returncode,0)
