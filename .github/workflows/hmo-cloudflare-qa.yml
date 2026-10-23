@@ -1,0 +1,23 @@
+name: HMO Cloudflare handoff checks
+on:
+  pull_request:
+    paths:
+      - 'cloudflare/hmo-step5-worker.mjs'
+      - 'tests/hmo-cloudflare-worker.test.mjs'
+      - '.github/workflows/hmo-cloudflare-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'cloudflare/hmo-step5-worker.mjs'
+      - 'tests/hmo-cloudflare-worker.test.mjs'
+      - '.github/workflows/hmo-cloudflare-qa.yml'
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check cloudflare/hmo-step5-worker.mjs
+      - run: node --test tests/hmo-cloudflare-worker.test.mjs
