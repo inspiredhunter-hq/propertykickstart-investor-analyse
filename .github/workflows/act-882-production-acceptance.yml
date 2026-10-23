@@ -33,6 +33,17 @@ jobs:
         run: node scripts/check-hmo-mobile-finance.mjs
       - name: Verify actual public domain routes
         run: node scripts/check-live-custom-domain.mjs
+      - name: Verify deployed HMO interactions and calculations
+        if: github.event_name == 'push'
+        env:
+          PK_HMO_TEST_URL: https://deals.propertykickstart.co.uk/HMO-NW-2S98D/
+        run: |
+          for attempt in $(seq 1 12); do
+            if node scripts/check-hmo-mobile-finance.mjs; then exit 0; fi
+            echo "Waiting for GitHub Pages to serve the current release (attempt $attempt)"
+            sleep 15
+          done
+          exit 1
       - name: Keep evidence screenshots
         if: always()
         uses: actions/upload-artifact@v4
