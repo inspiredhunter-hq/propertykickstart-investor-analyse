@@ -1,46 +1,47 @@
-// Cloudflare Worker module: receive a Step 5 HMO job, read approved data,
-// and dispatch a private draft build to GitHub. No publication or enrichment.
-const route = "/internal/hmo-draft";
-const fields = ["price","rent","ltv","rate","stamp","legal","broker","arrangement","survey","managementRate",
-  "cost-0","cost-1","cost-2","cost-3","cost-4","cost-5","cost-6","cost-7","cost-8"];
-function reply(body, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: {"content-type":"application/json","cache-control":"no-store"} });
+import {mapCanonical} from './hmo-canonical-mapping.mjs';
+import {readCanonical} from './hmo-canonical-reader.mjs';
+const route='/internal/hmo-draft';
+const reply=(body,status)=>new Response(JSON.stringify(body),{status,headers:{'content-type':'application/json','cache-control':'no-store'}});
+async function equal(a,b){
+ const digest=s=>crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+ const [x,y]=await Promise.all([digest(a),digest(b)]);let diff=0;
+ const aa=new Uint8Array(x),bb=new Uint8Array(y);for(let i=0;i<aa.length;i++)diff|=aa[i]^bb[i];return diff===0;
 }
-function constantTimeEq(a,b) {
-  if(typeof a!=="string" || typeof b!=="string") return false;
-  let diff=a.length^b.length;
-  for(let i=0;i<Math.max(a.length,b.length);i++) diff |= (a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);
-  return diff===0;
+async function bounded(request){
+ if(!request.body)throw Error('Empty body');
+ const reader=request.body.getReader();const chunks=[];let size=0;
+ try{while(true){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>1024)throw Error('Body exceeds limit');chunks.push(value);}}
+ finally{await reader.cancel();}
+ const bytes=new Uint8Array(size);let at=0;for(const c of chunks){bytes.set(c,at);at+=c.length;}
+ return JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
 }
-function validate(p) {
-  if(!p || typeof p!=="object" || Array.isArray(p)) throw Error("Invalid property body");
-  if(!/^HMO-[A-Z]{2}-[A-Z0-9]{5,}$/.test(p.property_code||"") || p.property_code==="HMO-NW-2S98D") throw Error("Invalid new HMO code");
-  for(const key of ["town","region","room_description","headline"]) if(typeof p[key]!=="string"||!p[key].trim()||p[key].length>160) throw Error("Invalid "+key);
-  if(!p.financials || Object.keys(p.financials).sort().join("|")!==[...fields].sort().join("|")) throw Error("Incomplete finance input");
-  for(const key of fields) if(typeof p.financials[key]!=="number" || !Number.isFinite(p.financials[key])||p.financials[key]<0 || p.financials[key]>1e8) throw Error("Invalid "+key);
-  const f=p.financials;
-  if(f.price<=0||f.rent<=0||f.ltv>75||f.rate>20||f.managementRate>100||Math.abs(f["cost-0"]-f.rent*f.managementRate/100)>0.02) throw Error("Finance policy validation failed");
-  return {property_code:p.property_code,town:p.town,region:p.region,room_description:p.room_description,headline:p.headline,financials:p.financials};
+export function createHmoWorker({read=readCanonical,dispatch=fetch}={}){
+ return {async fetch(request,env){
+  if(new URL(request.url).pathname!==route)return reply({error:'Not found'},404);
+  if(request.method!=='POST')return reply({error:'Method not allowed'},405);
+  if(env.HMO_ENABLED!=='true'||!env.AUTOMATION_DB||!env.HMO_INTAKE_TOKEN||!env.GITHUB_HMO_TOKEN||!env.HMO_NOTION_READ_TOKEN||!env.HMO_GOOGLE_SERVICE_ACCOUNT)return reply({error:'Service not configured'},503);
+  const auth=request.headers.get('authorization')||'';
+  if(auth.length>512||!await equal(auth,'Bearer '+env.HMO_INTAKE_TOKEN))return reply({error:'Unauthorised'},401);
+  if(request.headers.get('content-type')?.split(';')[0]!=='application/json')return reply({error:'JSON required'},415);
+  let body;try{body=await bounded(request);}catch{return reply({error:'Invalid or oversized body'},400);}
+  if(!body||Object.keys(body).join()!=='pipeline_page_id'||!/^([a-f0-9]{32}|[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i.test(body.pipeline_page_id))return reply({error:'Pipeline page ID required'},422);
+  let property;try{const source=await read(body.pipeline_page_id,env);property=mapCanonical(source.page,source.rows);}catch{return reply({error:'Canonical source unavailable or financial reconciliation required'},422);}
+  const raw=JSON.stringify(property);
+  const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(raw))),x=>x.toString(16).padStart(2,'0')).join('');
+  const db=env.AUTOMATION_DB,code=property.property_code;
+  // Claim before dispatch; uncertain delivery never retries automatically.
+  try{const claim=await db.prepare("INSERT INTO hmo_step5_jobs(property_code,digest,state) VALUES (?,?,'sending') ON CONFLICT(property_code) DO NOTHING").bind(code,digest).run();
+   if(claim.meta.changes!==1){const prior=await db.prepare('SELECT digest,state FROM hmo_step5_jobs WHERE property_code=?').bind(code).first();
+    return prior?.digest===digest&&prior.state==='accepted'?reply({accepted:true,replay:true,property_code:code},202):reply({error:'Existing job requires reconciliation'},409);}
+  }catch{return reply({error:'Durable ledger unavailable'},503);}
+  let accepted=false;
+  try{const response=await dispatch('https://api.github.com/repos/inspiredhunter-hq/propertykickstart-investor-analyse/dispatches',{
+   method:'POST',redirect:'error',signal:AbortSignal.timeout(15000),headers:{authorization:'Bearer '+env.GITHUB_HMO_TOKEN,accept:'application/vnd.github+json','x-github-api-version':'2022-11-28','user-agent':'pk-cloudflare-hmo-step5','content-type':'application/json'},
+   body:JSON.stringify({event_type:'pk_hmo_analyser_step5',client_payload:{property_json:raw,job_digest:digest}})});accepted=response.status===204;
+  }catch{/* Unknown delivery is held. */}
+  try{await db.prepare("UPDATE hmo_step5_jobs SET state=?,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE property_code=? AND digest=? AND state='sending'").bind(accepted?'accepted':'needs-review',code,digest).run();}
+  catch{return reply({error:'Delivery acknowledgement requires reconciliation'},503);}
+  return accepted?reply({accepted:true,property_code:code,stage:'draft generation requested'},202):reply({error:'Dispatch requires reconciliation'},502);
+ }};
 }
-export default {
- async fetch(request, env) {
-  const u=new URL(request.url);
-  if(u.pathname!==route) return reply({error:"Not found"},404);
-  if(request.method!=="POST") return reply({error:"Method not allowed"},405);
-  if(!env.HMO_INTAKE_TOKEN || !env.GITHUB_HMO_TOKEN) return reply({error:"Service not configured"},503);
-  const auth=request.headers.get("authorization")||"";
-  if(!constantTimeEq(auth,"Bearer "+env.HMO_INTAKE_TOKEN)) return reply({error:"Unauthorised"},401);
-  if(Number(request.headers.get("content-length")||"0")>20000) return reply({error:"Payload too large"},413);
-  let data; try {data=await request.json();} catch {return reply({error:"Invalid JSON"},400);}
-  if(!data || data.approved_step!==5 || data.finance_qa!=="approved") return reply({error:"Step 5 approval required"},422);
-  let property; try {property=validate(data.property);} catch(e){return reply({error:e.message},422);}
-  const response=await fetch("https://api.github.com/repos/inspiredhunter-hq/propertykickstart-investor-analyse/dispatches",{
-   method:"POST",
-   headers:{"authorization":"Bearer "+env.GITHUB_HMO_TOKEN,"accept":"application/vnd.github+json",
-    "x-github-api-version":"2022-11-28","user-agent":"pk-cloudflare-hmo-step5","content-type":"application/json"},
-   body:JSON.stringify({event_type:"pk_hmo_analyser_step5",client_payload:{property_json:JSON.stringify(property)}})
-  });
-  if(response.status!==204) return reply({error:"GitHub dispatch unsuccessful",status:response.status},502);
-  return reply({accepted:true,property_code:property.property_code,stage:"draft generation requested"},202);
- }
-};
+export default createHmoWorker();

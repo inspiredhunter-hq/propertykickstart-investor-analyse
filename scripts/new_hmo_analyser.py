@@ -3,7 +3,7 @@
 Never deploy automatically. All property figures must be supplied and QA verified.
 Usage: python3 scripts/new_hmo_analyser.py property.json
 """
-import json, re, sys
+import json, re, sys, html
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,7 +22,10 @@ def main():
         raise SystemExit("Require a new canonical HMO property code")
     if any(not isinstance(d[k],str) or not d[k].strip() for k in REQUIRED[:-1]):
         raise SystemExit("Property labels must be non-empty")
-    f=d["financials"]
+    f=dict(d["financials"])
+    other_acquisition=f.pop("otherAcquisition",0)
+    if isinstance(other_acquisition,bool) or not isinstance(other_acquisition,(int,float)) or not 0<=other_acquisition<100000000:
+        raise SystemExit("Invalid other acquisition costs")
     if set(f)!=set(FIELDS): raise SystemExit("Financial fields must exactly match: "+", ".join(FIELDS))
     for key,v in f.items():
         if isinstance(v,bool) or not isinstance(v,(int,float)) or not 0<=v<100000000:
@@ -36,11 +39,11 @@ def main():
     if dest.exists(): raise SystemExit("Refusing to overwrite existing analyser: "+str(dest))
     s=MASTER.read_text(encoding="utf-8")
     original={
-       "St Helens":d["town"],
-       "North West":d["region"],
-       "Seven lettable rooms":d["room_description"],
+       "St Helens":html.escape(d["town"]),
+       "North West":html.escape(d["region"]),
+       "Seven lettable rooms":html.escape(d["room_description"]),
        "HMO-NW-2S98D":code,
-       "£2,868 a month in rent. What could an investor keep?":d["headline"],
+       "£2,868 a month in rent. What could an investor keep?":html.escape(d["headline"]),
        "£220,000":f"£{f['price']:,.0f}",
        "£2,868":f"£{f['rent']/12:,.0f}"
     }
@@ -51,6 +54,9 @@ def main():
         rx=r'(<input\b[^>]*\bid="'+re.escape(key)+r'"[^>]*\bvalue=")([^"]*)(")'
         s,count=re.subn(rx,lambda m:m.group(1)+str(value)+m.group(3),s)
         if count!=1: raise SystemExit("Missing / duplicated input id: "+key)
+    s,count=re.subn(r'(<input\b[^>]*\bid="otherAcquisition"[^>]*\bvalue=")([^"]*)(")',
+        lambda m:m.group(1)+str(other_acquisition)+m.group(3),s)
+    if count!=1: raise SystemExit("Missing other acquisition input")
     if "HMO-NW-2S98D" in s or "St Helens" in s:
         raise SystemExit("Unreplaced master identity detected")
     dest.parent.mkdir(parents=True,exist_ok=False)
@@ -61,3 +67,4 @@ def main():
     print("independent model assertions, responsive/browser/accessibility, exactly two PDF pages,")
     print("release package, approved production deployment and all existing site URLs.")
 if __name__=="__main__": main()
+
