@@ -1,0 +1,27 @@
+name: HMO standard draft generator checks
+on:
+  pull_request:
+    paths:
+      - 'scripts/new_hmo_analyser.py'
+      - 'tests/test_hmo_generator.py'
+      - 'HMO-NW-2S98D/index.html'
+      - '.github/workflows/hmo-generator-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/new_hmo_analyser.py'
+      - 'tests/test_hmo_generator.py'
+      - 'HMO-NW-2S98D/index.html'
+      - '.github/workflows/hmo-generator-qa.yml'
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check Python syntax
+        run: python -m py_compile scripts/new_hmo_analyser.py tests/test_hmo_generator.py
+      - name: Verify draft generation and fail-closed behaviour
+        run: python -m unittest discover -s tests -p 'test_hmo_generator.py' -v
