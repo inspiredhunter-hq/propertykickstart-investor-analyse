@@ -1,0 +1,45 @@
+name: Generate approved HMO analyser drafts from validated inputs
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'hmo-inputs/*.json'
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate generator test suite
+        run: python -m unittest discover -s tests -p 'test_hmo_generator.py' -v
+      - name: Build HMO drafts from property-specific records
+        shell: bash
+        run: |
+          shopt -s nullglob
+          files=(hmo-inputs/*.json)
+          if (( ${#files[@]} == 0 )); then
+            echo "No HMO inputs to generate"; exit 0
+          fi
+          for file in "${files[@]}"; do
+            python scripts/new_hmo_analyser.py "$file"
+          done
+      - name: Collect draft analyser HTML
+        shell: bash
+        run: |
+          mkdir -p output
+          shopt -s nullglob
+          for file in hmo-inputs/*.json; do
+            code=$(python -c 'import json,sys;print(json.load(open(sys.argv[1]))["property_code"])' "$file")
+            mkdir -p "output/$code"
+            cp "$code/index.html" "output/$code/index.html"
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hmo-draft-analysers
+          path: output/
+          if-no-files-found: ignore
+          retention-days: 14
