@@ -1,6 +1,13 @@
 name: Generate approved HMO analyser drafts from validated inputs
 on:
   workflow_dispatch:
+    inputs:
+      property_json:
+        description: 'Validated Step 5 property JSON; no personal data'
+        required: false
+        type: string
+  repository_dispatch:
+    types: [pk_hmo_analyser_step5]
   pull_request:
     paths:
       - '.github/workflows/generate-hmo-draft.yml'
@@ -22,6 +29,33 @@ jobs:
           python-version: '3.11'
       - name: Validate generator test suite
         run: python -m unittest discover -s tests -p 'test_hmo_generator.py' -v
+      - name: Validate authenticated dispatch input
+        env:
+          INPUT_JSON: ${{ inputs.property_json }}
+          PAYLOAD_JSON: ${{ toJSON(github.event.client_payload) }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib
+          event=os.environ.get('GITHUB_EVENT_NAME')
+          raw=os.environ.get('INPUT_JSON','') if event=='workflow_dispatch' else ''
+          if event=='repository_dispatch':
+              p=json.loads(os.environ['PAYLOAD_JSON'])
+              raw=p.get('property_json','')
+              if not isinstance(raw,str): raise SystemExit('Invalid dispatch payload')
+          if raw:
+              d=json.loads(raw)
+              code=d.get('property_code','')
+              import re
+              if not isinstance(code,str) or not re.fullmatch(r'HMO-[A-Z]{2}-[A-Z0-9]{5,}',code):
+                  raise SystemExit('Invalid HMO property code')
+              p=pathlib.Path('hmo-inputs')
+              p.mkdir(exist_ok=True)
+              target=p/(code+'.json')
+              if target.exists(): raise SystemExit('Duplicate property input')
+              target.write_text(json.dumps(d),encoding='utf-8')
+          elif event=='repository_dispatch':
+              raise SystemExit('Missing property_json in dispatch')
+          PY
       - name: Build HMO drafts from property-specific records
         shell: bash
         run: |
