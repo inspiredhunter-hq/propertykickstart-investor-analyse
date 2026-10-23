@@ -48,7 +48,7 @@ def main():
         if old not in s: raise SystemExit("Approved template changed: cannot locate "+old)
         s=s.replace(old,new)
     for key,value in f.items():
-        rx=r'(<input\\b[^>]*\\bid="'+re.escape(key)+r'"[^>]*\\bvalue=")([^"]*)(")'
+        rx=r'(<input\b[^>]*\bid="'+re.escape(key)+r'"[^>]*\bvalue=")([^"]*)(")'
         s,count=re.subn(rx,lambda m:m.group(1)+str(value)+m.group(3),s)
         if count!=1: raise SystemExit("Missing / duplicated input id: "+key)
     if "HMO-NW-2S98D" in s or "St Helens" in s:
