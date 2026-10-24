@@ -31,6 +31,13 @@ for(const row of golden){
    await page.locator('#pkAccept').check();
    await page.locator('#pkReveal').click();
  }
+ assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
+ const questionLink=page.locator('#pkQuestions a');
+ assert.equal(await questionLink.getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8','existing questionnaire reused without transmitting analyser data');
+ assert.equal(await questionLink.getAttribute('target'),'_blank');
+ const reference=await page.locator('#pkQuestionReference').textContent();
+ assert.match(reference,/(?:HA|BTL|HMO)-[A-Z]{2}-[A-Z0-9]+/,'property reference displayed');
+ assert.match(await page.locator('#pkQuestions').textContent(),/cannot guarantee an answer or a personal reply/);
  const other=row.type==='ha'?'#otherBuyingInput':'#otherAcquisition';
  const capital=row.type==='ha'?'#capitalSummary':'#capitalOut';
  const annual=row.type==='ha'?'#annual':'#profitOut';
