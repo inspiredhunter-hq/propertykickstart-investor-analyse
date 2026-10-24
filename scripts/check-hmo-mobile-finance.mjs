@@ -44,19 +44,23 @@ for(const width of [320,390,430,1280]){
  // Fee benchmarks use explicit independent expected values, including the minimum boundary.
  for(const [price,fee] of [[90000,3600],[149999,3600],[150000,3600],[150001,3600.02],[220000,5280],[300000,7200]]){
   await page.locator('#price').fill(String(price));
-  const actual=cash(await page.locator('#pkFeeOut').textContent());assert.equal(actual,fee);
+  const actual=cash(await page.locator('#pkFeeOut').textContent());assert.equal(actual,Math.round(fee));
   const capital=price*0.25+12900+2500+2200+1999+500+fee;
-  assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-capital)<0.011);
+  assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-capital)<=0.5);
   const costs=4129.92+2753.28+231.96+2753.28+524.52+366+5621.52+2406.24+3011;
   const profit=34416-costs-price*0.75*0.06;
-  assert.ok(Math.abs(cash(await page.locator('#profitOut').textContent())-profit)<0.011);
-  assert.ok(Math.abs(cash(await page.locator('#roiOut').textContent())-profit/capital*100)<=0.0051);
-  assert.equal(await page.locator('#spend').inputValue(),Math.ceil(capital*2/0.9).toLocaleString('en-GB'));
+  assert.ok(Math.abs(cash(await page.locator('#profitOut').textContent())-profit)<=0.5);
+  assert.equal(cash(await page.locator('#roiOut').textContent()),Math.round(profit/capital*100));
+  const exact=await page.evaluate(()=>compute());
+  assert.ok(Math.abs(exact.capital-capital)<0.01);
+  assert.ok(Math.abs(exact.profit-profit)<0.01);
+  assert.ok(Math.abs(exact.roi-profit/capital*100)<1e-8);
+  assert.equal(await page.locator('#spend').inputValue(),Math.round(capital*1.25).toLocaleString('en-GB'));
  }
  await page.locator('#price').fill('220000');
- assert.equal(await page.locator('#costOut').textContent(),'£21,797.72');
+ assert.equal(await page.locator('#costOut').textContent(),'£21,798');
  assert.equal(await page.locator('#contextCapital').textContent(),'£80,379');
- assert.equal(await page.locator('#contextCashflow').textContent(),'£226.52');
+ assert.equal(await page.locator('#contextCashflow').textContent(),'£227');
  await page.locator('#goalMode').selectOption('portfolio');await page.locator('#target').fill('1000');
  assert.match(await page.locator('#progressText').textContent(),/approximately 5 similar-performing properties/);
  assert.equal(await page.locator('#goalPrompt').isVisible(),false);
@@ -66,8 +70,8 @@ for(const width of [320,390,430,1280]){
  // Restore then verify management mode and printable financial outputs.
  await page.locator('#ltv').fill('75');await page.locator('#otherAcquisition').fill('');
  await page.locator('#involvement').selectOption('Self-managed');assert.equal(await page.locator('#managementRate').inputValue(),'0');
- assert.equal(await page.locator('#profitOut').textContent(),'£6,848.2');
- await page.locator('#involvement').selectOption('Managed HMO');assert.equal(await page.locator('#profitOut').textContent(),'£2,718.28');
+ assert.equal(await page.locator('#profitOut').textContent(),'£6,848');
+ await page.locator('#involvement').selectOption('Managed HMO');assert.equal(await page.locator('#profitOut').textContent(),'£2,718');
  await page.locator('#goalMode').selectOption('explore');
  assert.equal(await page.locator('#targetEntry').isVisible(),false,'returning to exploring hides target input');
  await page.screenshot({path:`qa-evidence/hmo-review-${width}.png`,fullPage:true});
@@ -75,7 +79,7 @@ for(const width of [320,390,430,1280]){
   const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});writeFileSync('qa-evidence/hmo-review.pdf',pdf);
   const info=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});assert.match(info.stdout,/Pages:\s+2/);
   const text=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'}).stdout;
-  assert.match(text,/5,280/);assert.match(text,/80,379/);assert.match(text,/226.52/);
+  assert.match(text,/5,280/);assert.match(text,/80,379/);assert.match(text,/227/);
   assert.doesNotMatch(text,/Supplier bills included here|12% is the standard/,'print must not contain help explanations');
  }
  assert.deepEqual(errors,[]);results.push({width,result:'PASS',fee:5280,capital:80379,annualCosts:21797.72,monthlyCashflow:226.52});
