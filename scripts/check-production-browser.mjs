@@ -53,8 +53,8 @@ for(const row of golden){
    const model=await page.evaluate(()=>compute());
    assert.ok(Math.abs(model.profit-2718.28)<0.01,'exact HMO cashflow retained beneath whole-pound display');
    assert.ok(Math.abs(model.roi-2718.28/80379*100)<1e-8,'exact HMO ROI independently reconciled');
-   assert.equal(await page.locator('#propertyCount').inputValue(),'1','default portfolio planning should start at 2 properties');
-   assert.equal(await page.locator('#spend').inputValue(),'100,474','two property capital inclusive of 10% reserve');
+   assert.equal(await page.locator('#propertyCount').inputValue(),'1','default portfolio planning should start at one property');
+   assert.equal(await page.locator('#spend').inputValue(),'100,474','one-property starting capital with current planning uplift');
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','illustrative capital not directly editable');
    assert.equal(await page.locator('#spend').getAttribute('type'),'text','read-only budget formatted with thousands separators');
    assert.equal(await page.locator('#incomeGoalEntry').evaluate(e=>e.closest('.grid').children[1].contains(e)),true,'Cash Flow should be in right SCORE column');
@@ -65,7 +65,8 @@ for(const row of golden){
    await page.locator('#propertyCount').fill('3');
    assert.equal(await page.locator('#spend').inputValue(),'301,421','property count drives planning capital');
    await page.locator('#reserve').fill('20');
-   assert.equal(await page.locator('#spend').inputValue(),'301,421','reserve changes illustrative budget');
+   assert.equal(await page.locator('#spend').inputValue(),'301,421','reserve does not change starting capital');
+   assert.equal(await page.locator('#availableOut').textContent(),'£241,137','reserve reduces available capital');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');

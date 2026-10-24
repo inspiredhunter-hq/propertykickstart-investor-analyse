@@ -59,7 +59,7 @@ for(const width of [320,390,430,1280]){
  }
  await page.locator('#price').fill('220000');
  assert.equal(await page.locator('#costOut').textContent(),'£21,798');
- assert.equal(await page.locator('#contextCapital').textContent(),'£80,379');
+ assert.equal(await page.locator('#capitalOut').textContent(),'£80,379');
  assert.equal(await page.locator('#contextCashflow').textContent(),'£227');
  await page.locator('#goalMode').selectOption('portfolio');await page.locator('#target').fill('1000');
  assert.match(await page.locator('#progressText').textContent(),/approximately 5 similar-performing properties/);
