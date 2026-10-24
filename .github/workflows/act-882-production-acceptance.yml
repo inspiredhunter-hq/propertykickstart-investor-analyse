@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'index.html'
+      - 'question-controls.js'
+      - 'question-controls.css'
       - 'HA-*/**'
       - 'BTL-*/**'
       - 'HMO-*/**'
