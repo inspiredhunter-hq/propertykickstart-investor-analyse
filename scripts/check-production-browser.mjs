@@ -12,7 +12,7 @@ const golden=[
   {path:'index.html',type:'ha',capital:206199,profit:26979,roi:13.08},
   {path:'HA-SE-3FTDU/index.html',type:'ha',capital:206199,profit:26979,roi:13.08},
   {path:'HA-NW-9JSFK/index.html',type:'ha',capital:106359,profit:13707,roi:12.89},
-  {path:'BTL-NE-WLETS/index.html',type:'btl',capital:50649,profit:2848,roi:5.62,rate:10},
+  {path:'BTL-NE-WLETS/index.html',type:'btl',capital:55713.9,profit:2848,roi:5.11,rate:10},
   {path:'HMO-NW-2S98D/index.html',type:'hmo',capital:80379,profit:2718.28,roi:3.38,rate:12}
 ];
 const cash=s=>Number(String(s).replace(/[^0-9.-]/g,''));
@@ -54,6 +54,19 @@ for(const row of golden){
    assert.equal(await score.locator('input[name="cashflowMode"]:checked').count(),0,'no cashflow option preselected');
    assert.equal(await score.locator('input[name="riskChoice"]:checked').count(),0,'no risk option preselected');
    assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
+   const card2=page.locator('.acquisition-card');
+   assert.equal(await card2.locator('#price').inputValue(),'135,000','pence hidden by default for whole-pound figures');
+   assert.equal(await card2.locator('#price').evaluate(e=>e.parentElement.nextElementSibling?.querySelector('#depositPercentOut')?.id),'depositPercentOut','deposit percentage follows asking price');
+   assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
+   assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent())-5064.90)<0.01,'10 percent contingency calculated on unreserved capital');
+   assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-55713.90)<0.01,'total includes contingency');
+   await card2.locator('#showPence').check();
+   assert.equal(await card2.locator('#price').inputValue(),'135,000.00','pence switch displays trailing zeros');
+   await card2.locator('#showPence').uncheck();
+   await card2.locator('#reserve').fill('0');
+   assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent()))<0.01,'investor can remove contingency entirely');
+   assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-50649)<0.01,'zero contingency has no uplift');
+   await card2.locator('#reserve').fill('10');
    assert.equal((await page.locator('#depositPercentOut').innerText()).trim(),'25.00%','75% LTV means 25% calculated deposit');
    assert.ok(Math.abs(cash(await page.locator('#depositOut').innerText())-33750)<0.01,'deposit amount follows LTV');
    await page.locator('#ltv').fill('65');
@@ -74,6 +87,7 @@ for(const row of golden){
    assert.ok(Math.abs(cash(await page.locator('#spend').inputValue())-120000.50)<0.01,'manual investor budget must survive finance changes; got '+await page.locator('#spend').inputValue());
    await page.locator('#restoreBudget').click();
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','restore enables calculated budget');
+   await page.locator('#reserve').fill('10');
    const fields=section3.locator('.cost-input');
    assert.equal(await fields.count(),12,'BTL retains all twelve annual operating cost inputs');
    assert.equal(await fields.first().inputValue(),'1,362.00','initial management cost is comma-formatted with pence');
@@ -191,11 +205,11 @@ for(const row of golden){
  }
  await page.locator(other).fill('975');
  await page.locator(other).dispatchEvent('input');
- assert.ok(Math.abs(cash(await page.locator(capital).textContent())-actualCapital-975)<=1,'additional cost must increase capital by £975');
+ assert.ok(Math.abs(cash(await page.locator(capital).textContent())-actualCapital-(row.type==='btl'?1072.50:975))<=1,'additional cost and applicable contingency must increase total capital');
  // ACT-882: explicit two-decimal rendering on key sterling outputs.
  const sterlingSelectors=row.type==='ha'
   ? ['#haAnnualCostTotal','#haMonthlyCostTotal','#annual','#monthlyFinancial','#capitalSummary']
-  : ['#costOut','#costMonthly','#profitOut','#capitalOut'];
+  : row.type==='btl'?['#costOut','#costMonthly','#profitOut']:['#costOut','#costMonthly','#profitOut','#capitalOut'];
  for(const selector of sterlingSelectors){
   const value=(await page.locator(selector).textContent()).trim();
   assert.match(value,/^[−-]?£\d{1,3}(?:,\d{3})*\.\d{2}$/,row.path+': monetary output must display exactly two decimals at '+selector+'; got '+value);
