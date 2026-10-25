@@ -66,7 +66,11 @@ for(const row of golden){
    assert.equal(await page.locator('#spend').inputValue(),'301,421','property count drives planning capital');
    await page.locator('#reserve').fill('20');
    assert.equal(await page.locator('#spend').inputValue(),'301,421','reserve does not change starting capital');
-   assert.equal(await page.locator('#availableOut').textContent(),'£241,137','reserve reduces available capital');
+   // The capital breakdown is explicitly a one-property allocation.
+   assert.equal(await page.locator('#availableOut').textContent(),'£80,379','reserve reduces each property allocation');
+   const portfolio=await page.evaluate(()=>compute());
+   assert.ok(Math.abs(portfolio.available-301421*0.8)<0.01,'total portfolio capital after contingency');
+   assert.equal(await page.locator('#startingCapitalOut').textContent(),'£100,474','starting capital allocated per property');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');
