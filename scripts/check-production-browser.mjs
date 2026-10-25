@@ -82,9 +82,16 @@ for(const row of golden){
    assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent())-5064.90)<0.01,'10 percent contingency calculated on unreserved capital');
    assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-55713.90)<0.01,'total includes contingency');
+   assert.equal((await card2.locator('#pkfee').textContent()).trim(),'3,600','PK fee starts without trailing zeroes');
+   assert.equal(await card2.locator('#reserve').inputValue(),'10','contingency percentage starts without trailing zeroes');
    await card2.locator('#showPence').check();
+   assert.equal((await card2.locator('#pkfee').textContent()).trim(),'3,600.00','PK fee respects the pence switch');
+   assert.equal(await card2.locator('#reserve').inputValue(),'10.00','contingency percentage respects the pence switch');
+   assert.equal((await card2.locator('#contingencyOut').textContent()).trim(),'£5,064.90','actual contingency pence never hidden');
    assert.equal(await card2.locator('#price').inputValue(),'135,000.00','pence switch displays trailing zeros');
    await card2.locator('#showPence').uncheck();
+   assert.equal((await card2.locator('#pkfee').textContent()).trim(),'3,600','PK fee restores compact display');
+   assert.equal(await card2.locator('#reserve').inputValue(),'10','contingency percentage restores compact display');
    await card2.locator('#reserve').fill('0');
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent()))<0.01,'investor can remove contingency entirely');
    assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-50649)<0.01,'zero contingency has no uplift');
