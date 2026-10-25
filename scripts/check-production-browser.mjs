@@ -48,10 +48,27 @@ for(const row of golden){
    await section3.locator('#boilerInput').fill('366');
    assert.equal(await section3.locator('#runningCostsInput').count(),1,row.path+': running cost override appears in Section 3');
  } else if(row.type==='btl'){
-   const score=page.locator('section.card').filter({has:page.locator('h2').filter({hasText:'1. Your SCORE criteria'})});
-   assert.equal(await score.locator('.score-intro').count(),1,'SCORE explanation is concise');
-   assert.deepEqual(await score.locator('.score-intro strong').allTextContents(),['S','C','O','R','E'],'each SCORE initial is bold');
-   for(const initial of ['S','C','O','E'])assert.equal(await score.locator('label.field strong').filter({hasText:new RegExp('^'+initial+'
+   const score=page.locator('#scoreSection');
+   assert.equal(await score.locator('.score-intro').innerText(),'Know your SCORE before you assess the VALUE.');
+   assert.deepEqual(await score.locator('.score-options legend strong, .score-item > label:first-child strong, .score-item > strong').allTextContents(),['S','C','O','R','E']);
+   assert.equal(await score.locator('input[name="cashflowMode"]:checked').count(),0,'no cashflow option preselected');
+   assert.equal(await score.locator('input[name="riskChoice"]:checked').count(),0,'no risk option preselected');
+   assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
+   assert.equal(await page.locator('#spend').getAttribute('readonly'),'','suggested budget defaults read-only');
+   assert.equal(await page.locator('#horizon').inputValue(),'20 years');
+   assert.equal(await page.locator('#targetField').isVisible(),false);
+   await score.locator('input[name="cashflowMode"][value="target"]').check();
+   assert.equal(await page.locator('#targetField').isVisible(),true);
+   await score.locator('input[name="cashflowMode"][value="explore"]').check();
+   assert.equal(await page.locator('#targetField').isVisible(),false);
+   await page.locator('#customBudget').check();
+   assert.equal(await page.locator('#spend').isEditable(),true);
+   await page.locator('#spend').fill('120000.50');
+   await page.locator('#reserve').fill('15');
+   assert.ok(Math.abs(cash(await page.locator('#spend').inputValue())-120000.50)<0.01,'manual investor budget must survive finance changes');
+   await page.locator('#restoreBudget').click();
+   assert.equal(await page.locator('#spend').getAttribute('readonly'),'','restore enables calculated budget');
+   const fields=section3.locator('.cost-input');
    assert.equal(await fields.count(),12,'BTL retains all twelve annual operating cost inputs');
    assert.equal(await fields.first().inputValue(),'1,362.00','initial management cost is comma-formatted with pence');
    assert.equal(await section3.locator('[data-cost="5"]').inputValue(),'0.00','zero annual cost shows pence');
