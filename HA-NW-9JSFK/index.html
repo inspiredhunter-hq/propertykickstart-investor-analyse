@@ -207,7 +207,7 @@ html.pk-locked body > :not(#pkDisclosureGate):not(script){display:none!important
 <p>The owner is responsible for boiler repairs and replacement and for buildings insurance. Insurance cover, exclusions, claim limits and any difference between cover and actual replacement costs should be confirmed with the relevant providers. Separate professional fees may apply. Investors are responsible for their own decisions and should consult appropriately qualified advisers before proceeding.</p>
 <p>Printing or saving this assessment does not constitute a reservation, acceptance of Property Kickstart's terms, or an agreement to buy a property.</p></section></main><script>
 'use strict';
-const e=id=>document.getElementById(id);const gbp=v=>(v<0?'−':'')+'£'+Math.round(Math.abs(v)).toLocaleString('en-GB');const pct=v=>v.toFixed(2)+'%';const DEFAULT={rent:27828,price:290000,stamp:19000,legal:2500,survey:500,broker:2900,arrangement:1999,otherBuying:0,boiler:366,buildings:705,management:0,otherOwner:0};
+const e=id=>document.getElementById(id);const gbp=v=>(v<0?'−':'')+'£'+Math.abs(v).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});const pct=v=>v.toFixed(2)+'%';const DEFAULT={rent:27828,price:290000,stamp:19000,legal:2500,survey:500,broker:2900,arrangement:1999,otherBuying:0,boiler:366,buildings:705,management:0,otherOwner:0};
 const numeric=id=>Math.max(0,Number(e(id).value)||0);
 const selected=()=>({rent:numeric('rentInput'),price:Math.max(1,numeric('priceInput')),stamp:numeric('stampInput'),legal:numeric('legalInput'),survey:numeric('surveyInput'),broker:numeric('brokerInput'),arrangement:numeric('arrangementInput'),otherBuying:numeric('otherBuyingInput'),boiler:numeric('boilerInput'),buildings:numeric('buildingsInput'),management:managementFee(),otherOwner:numeric('otherOwnerInput')});
 function managementFee(){return e('managementMode').value==='percent'?numeric('rentInput')*Math.min(100,numeric('managementPercentInput'))/100:numeric('managementInput');}
@@ -298,7 +298,7 @@ updateOutlook();updateManagementMode();render();const base=calculate(75,6,1,0,DE
 const val=id=>document.getElementById(id)?.value||'';
 const valText=id=>document.getElementById(id)?.textContent?.trim()||'';
 const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const money=n=>'£'+Math.round(Number(n)||0).toLocaleString('en-GB');
+const money=n=>(Number(n)<0?'−':'')+'£'+Math.abs(Number(n)||0).toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 const table=rows=>'<table class="ps-table">'+rows.map(r=>'<tr><td>'+esc(r[0])+'</td><td>'+esc(r[1])+'</td></tr>').join('')+'</table>';
 const box=(head,body)=>'<section class="ps-box"><h3>'+head+'</h3>'+body+'</section>';
 function makePrint(){
