@@ -52,6 +52,8 @@ for(const row of golden){
    assert.equal(await score.locator('.score-intro').innerText(),'Know your SCORE before you assess the VALUE.');
    assert.deepEqual(await score.locator('.score-options legend strong, .score-item > label:first-child strong, .score-item > strong').allTextContents(),['S','C','O','R','E']);
    assert.equal(await score.locator('input[name="cashflowMode"]:checked').count(),0,'no cashflow option preselected');
+   assert.equal(await score.locator('.score-cashflow input[name="cashflowMode"]').count(),2,'Cash Flow options must be directly under C heading');
+   assert.equal(await score.locator('.score-cashflow').evaluate(el=>el.contains(el.querySelector('fieldset'))),true,'Cash Flow fieldset must be inside the same grid cell as its heading');
    assert.equal(await score.locator('input[name="riskChoice"]:checked').count(),0,'no risk option preselected');
    assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
    const card2=page.locator('.acquisition-card');
