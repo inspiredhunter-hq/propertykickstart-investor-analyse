@@ -33,6 +33,27 @@ for(const row of golden){
  assert.equal(await page.locator(reveal).isEnabled(),true);
  await page.locator(reveal).click();
  assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
+ // ACT-882 Section 3 specific regression checks on all strategy pages.
+ const heading=page.locator('h2').filter({hasText:/^3\. Annual operating costs$/});
+ assert.equal(await heading.count(),1,row.path+': Section 3 must use universal operating cost heading');
+ const section3=heading.locator('xpath=..');
+ if(row.type==='ha'){
+   const annualCost=section3.locator('#haAnnualCostTotal');
+   const monthlyCost=section3.locator('#haMonthlyCostTotal');
+   assert.ok(Math.abs(cash(await annualCost.textContent())-1071)<0.01,row.path+': original HA initial annual costs');
+   assert.ok(Math.abs(cash(await monthlyCost.textContent())-89.25)<0.01,row.path+': original HA initial monthly costs');
+   await section3.locator('#boilerInput').fill('466');
+   assert.ok(Math.abs(cash(await annualCost.textContent())-1171)<0.01,row.path+': editable boiler flows to annual total');
+   assert.ok(Math.abs(cash(await monthlyCost.textContent())-(1171/12))<0.02,row.path+': editable boiler flows to monthly total');
+   await section3.locator('#boilerInput').fill('366');
+   assert.equal(await section3.locator('#runningCostsInput').count(),1,row.path+': running cost override appears in Section 3');
+ } else if(row.type==='hmo'){
+   assert.equal(await section3.locator('.cost-input').count(),9,'preserve all nine HMO cost inputs');
+   assert.equal(await section3.locator('h3').filter({hasText:'Additional HMO operating costs'}).count(),1);
+   const inputIds=await section3.locator('.cost-input').evaluateAll(nodes=>nodes.map(n=>n.id));
+   assert.deepEqual(inputIds.slice(-3),['cost-5','cost-6','cost-7'],'HMO additional groups retain their existing input IDs and order');
+ }
+
  // Governance invariant: every strategy and the homepage use the exact approved SCORE copy.
  const scoreIntro=page.locator('main .notice').filter({hasText:'Know your SCORE before you assess the VALUE.'});
  assert.equal(await scoreIntro.count(),1,row.path+': exactly one approved SCORE introduction required');
