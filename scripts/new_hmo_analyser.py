@@ -35,6 +35,9 @@ def main():
     dest=ROOT/code/"index.html"
     if dest.exists(): raise SystemExit("Refusing to overwrite existing analyser: "+str(dest))
     s=MASTER.read_text(encoding="utf-8")
+    # Approved universal intro is mandatory for every newly generated HMO analyser.
+    if s.count("Know your <strong>SCORE</strong> before you assess the <strong>VALUE</strong>.") != 1:
+        raise SystemExit("Approved universal SCORE introduction is missing or duplicated in master")
     original={
        "St Helens":d["town"],
        "North West":d["region"],
