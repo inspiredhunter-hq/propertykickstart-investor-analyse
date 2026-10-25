@@ -4,6 +4,7 @@
 // Output: 36-value config for build.mjs. Safe defaults exist only for derived display fields.
 import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
 import {dirname,resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 const [pipelineFile,approvedFile,outputFile]=process.argv.slice(2);
 if(!pipelineFile||!approvedFile||!outputFile)throw Error('Usage: node templates/btl-v1/from-pipeline.mjs <pipeline-record.json> <approved-assumptions.json> <config-out.json>');
@@ -49,7 +50,7 @@ data.STRESSRENTMONTHLY=data.RENT/12;data.STRESSRENTSLIDER=data.RENT/12;
 data.STRESSCOSTSMONTHLY=Number((sum/12).toFixed(2));data.STRESSCOSTSSLIDER=data.STRESSCOSTSMONTHLY;
 // Explicitly require independent property-code match before applying any overrides.
 assert.equal(approved.propertyCode,data.PROPERTY_CODE,'Assumptions must be approved for this exact property');
-const template=readFileSync(resolve(new URL('./index.template.html',import.meta.url)),'utf8');
+const template=readFileSync(fileURLToPath(new URL('./index.template.html',import.meta.url)),'utf8');
 const tokens=[...new Set([...template.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map(x=>x[1]))];
 assert.deepEqual(Object.keys(data).sort(),tokens.sort(),'Adapter must generate every and only template token');
 mkdirSync(dirname(resolve(outputFile)),{recursive:true});
