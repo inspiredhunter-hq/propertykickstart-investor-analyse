@@ -98,18 +98,18 @@ for(const row of golden){
    assert.equal(await page.locator('#spend').getAttribute('type'),'text','read-only budget formatted with thousands separators');
    assert.equal(await page.locator('#incomeGoalEntry').evaluate(e=>e.closest('.grid').children[1].contains(e)),true,'Cash Flow should be in right SCORE column');
    assert.equal(await page.locator('[aria-label="Contingency information"]').count(),1,'reserve tooltip present');
-   assert.equal(await page.locator('#availableOut').textContent(),'£90,427','calculated available capital reflects contingency');
+   assert.ok(Math.abs(cash(await page.locator('#availableOut').textContent())-90426.6)<0.01,'calculated available capital reflects contingency at pence precision');
    assert.equal(await page.locator('#pkfee').getAttribute('type'),'hidden','fee must not be an editable textbox');
-   assert.equal(await page.locator('#pkFeeOut').textContent(),'£5,280','PK fee calculated from approved formula');
+   assert.ok(Math.abs(cash(await page.locator('#pkFeeOut').textContent())-5280)<0.01,'PK fee calculated from approved formula');
    await page.locator('#propertyCount').fill('3');
    assert.equal(await page.locator('#spend').inputValue(),'301,421','property count drives planning capital');
    await page.locator('#reserve').fill('20');
    assert.equal(await page.locator('#spend').inputValue(),'301,421','reserve does not change starting capital');
    // The capital breakdown is explicitly a one-property allocation.
-   assert.equal(await page.locator('#availableOut').textContent(),'£80,379','reserve reduces each property allocation');
+   assert.ok(Math.abs(cash(await page.locator('#availableOut').textContent())-80379)<0.01,'reserve reduces each property allocation');
    const portfolio=await page.evaluate(()=>compute());
    assert.ok(Math.abs(portfolio.available-301421*0.8)<0.01,'total portfolio capital after contingency');
-   assert.equal(await page.locator('#startingCapitalOut').textContent(),'£100,474','starting capital allocated per property');
+   assert.ok(Math.abs(cash(await page.locator('#startingCapitalOut').textContent())-100474)<0.01,'starting capital allocated per property');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');
