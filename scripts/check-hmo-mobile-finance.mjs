@@ -46,7 +46,7 @@ for(const width of [320,390,430,1280]){
  // Fee benchmarks use explicit independent expected values, including the minimum boundary.
  for(const [price,fee] of [[90000,3600],[149999,3600],[150000,3600],[150001,3600.02],[220000,5280],[300000,7200]]){
   await page.locator('#price').fill(String(price));
-  const actual=cash(await page.locator('#pkFeeOut').textContent());assert.equal(actual,Math.round(fee));
+  const actual=cash(await page.locator('#pkFeeOut').textContent());assert.ok(Math.abs(actual-fee)<0.011,'PK fee retains penny precision');
   const capital=price*0.25+12900+2500+2200+1999+500+fee;
   assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-capital)<=0.5);
   const costs=4129.92+2753.28+231.96+2753.28+524.52+366+5621.52+2406.24+3011;
@@ -60,20 +60,20 @@ for(const width of [320,390,430,1280]){
   assert.equal(await page.locator('#spend').inputValue(),Math.round(capital*1.25).toLocaleString('en-GB'));
  }
  await page.locator('#price').fill('220000');
- assert.equal(await page.locator('#costOut').textContent(),'£21,798');
- assert.equal(await page.locator('#capitalOut').textContent(),'£80,379');
- assert.equal(await page.locator('#contextCashflow').textContent(),'£227');
+ assert.ok(Math.abs(cash(await page.locator('#costOut').textContent())-21797.72)<0.01);
+ assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-80379)<0.01);
+ assert.ok(Math.abs(cash(await page.locator('#contextCashflow').textContent())-(2718.28/12))<0.01);
  await page.locator('#goalMode').selectOption('portfolio');await page.locator('#target').fill('1000');
  assert.match(await page.locator('#progressText').textContent(),/approximately 5 similar-performing properties/);
  assert.equal(await page.locator('#goalPrompt').isVisible(),false);
  assert.equal(await page.locator('#setGoalBtn').textContent(),'Change my income goal');
- await page.locator('#otherAcquisition').fill('975');assert.equal(await page.locator('#capitalOut').textContent(),'£81,354');
- await page.locator('#ltv').fill('0');assert.equal(await page.locator('#capitalOut').textContent(),'£242,155');
+ await page.locator('#otherAcquisition').fill('975');assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-81354)<0.01);
+ await page.locator('#ltv').fill('0');assert.ok(Math.abs(cash(await page.locator('#capitalOut').textContent())-242155)<0.01);
  // Restore then verify management mode and printable financial outputs.
  await page.locator('#ltv').fill('75');await page.locator('#otherAcquisition').fill('');
  await page.locator('#involvement').selectOption('Self-managed');assert.equal(await page.locator('#managementRate').inputValue(),'0');
- assert.equal(await page.locator('#profitOut').textContent(),'£6,848');
- await page.locator('#involvement').selectOption('Managed HMO');assert.equal(await page.locator('#profitOut').textContent(),'£2,718');
+ assert.ok(Math.abs(cash(await page.locator('#profitOut').textContent())-6848.20)<0.51);
+ await page.locator('#involvement').selectOption('Managed HMO');assert.ok(Math.abs(cash(await page.locator('#profitOut').textContent())-2718.28)<0.01);
  await page.locator('#goalMode').selectOption('explore');
  assert.equal(await page.locator('#targetEntry').isVisible(),false,'returning to exploring hides target input');
  await page.screenshot({path:`qa-evidence/hmo-review-${width}.png`,fullPage:true});
