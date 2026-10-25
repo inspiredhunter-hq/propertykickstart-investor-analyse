@@ -5,6 +5,9 @@
   const notes = document.getElementById('notes') || document.getElementById('decisionNotes');
   const anchor = notes && notes.closest('section');
   if (!anchor) return;
+  // The South Shields analyser already supplies its approved question section.
+  // Do not inject a second legacy panel when a local questionnaire CTA exists.
+  if (anchor.querySelector('.question-cta')) return;
   const header = document.querySelector('header p');
   const original = header ? header.textContent.trim() : '';
   const section = document.createElement('section');
