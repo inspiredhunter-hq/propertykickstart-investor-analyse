@@ -1,0 +1,14 @@
+/* ACT-882 shared investor analyser header v1.0; source of truth for all strategies */
+.pk-universal-header{background:#34204e;color:#fff;padding:28px max(18px,calc((100vw - 1030px)/2));}
+.pk-universal-header .pk-eyebrow{display:block;color:#f3b369;font-size:.82rem;font-weight:800;letter-spacing:.12em}
+.pk-universal-header h1{color:#fff;font-size:clamp(1.85rem,4.3vw,3.3rem);line-height:1.17;letter-spacing:-.025em;margin:16px 0}
+.pk-universal-header .pk-location,.pk-universal-header .pk-description{color:#eee;margin:3px 0;font-size:clamp(.95rem,1.7vw,1.15rem);overflow-wrap:anywhere}
+.pk-header-intro{background:#fff2d9;border-radius:10px;padding:18px 20px;margin:0 0 15px}
+.pk-header-intro h2{font-size:1.15rem;color:#192638;margin:0 0 6px}
+.pk-header-intro p{margin:0}
+.pk-header-risk{background:#fff4e9;border:2px solid #ad5415;border-left-width:6px;border-radius:9px;padding:13px 17px;margin:0 0 12px}
+.pk-header-risk strong{display:block;margin-bottom:4px}
+.pk-header-risk p{margin:0}
+.pk-header-disclaimer{font-size:.88rem;color:#454856;margin:0 0 20px}
+@media(max-width:650px){.pk-universal-header{padding:24px 18px}.pk-universal-header h1{font-size:clamp(1.75rem,8.2vw,2.65rem)}.pk-header-intro{padding:16px}.pk-header-risk{padding:12px 14px}}
+@media print{.pk-universal-header,.pk-header-intro,.pk-header-risk,.pk-header-disclaimer{display:none!important}}

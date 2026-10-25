@@ -22,15 +22,18 @@ for(const row of golden){
  const page=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1});
  const pageErrors=[];page.on('pageerror',e=>pageErrors.push(e.message));
  await page.goto(pathToFileURL(resolve(row.path)).href,{waitUntil:'load'});
- if(row.type==='btl'){
-   assert.equal(await page.locator('#analysisContent').isVisible(),false,'BTL acknowledgement should block analysis before acceptance');
-   await page.locator('#ackBox').check();
-   await page.locator('#revealBtn').click();
- }else{
-   assert.equal(await page.locator('#pkReveal').isDisabled(),true,'per-visit risk acknowledgement should be mandatory');
-   await page.locator('#pkAccept').check();
-   await page.locator('#pkReveal').click();
- }
+ const gate=row.type==='btl'?'#ackGate':'#pkDisclosureGate';
+ const checkbox=row.type==='btl'?'#ackBox':'#pkAccept';
+ const reveal=row.type==='btl'?'#revealBtn':'#pkReveal';
+ assert.equal(await page.locator(gate).isVisible(),true,'mandatory acknowledgement gate visible');
+ assert.equal(await page.locator(checkbox).isChecked(),false,'acknowledgement starts unchecked');
+ assert.equal(await page.locator(reveal).isDisabled(),true,'analysis locked until acknowledged');
+ if(row.type==='btl')assert.equal(await page.locator('#analysisContent').isVisible(),false);
+ await page.locator(checkbox).check();
+ assert.equal(await page.locator(reveal).isEnabled(),true);
+ await page.locator(reveal).click();
+ assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
+
  assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
  const questionLink=page.locator('#pkQuestions a');
  assert.equal(await questionLink.getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8','existing questionnaire reused without transmitting analyser data');
