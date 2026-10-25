@@ -88,6 +88,16 @@ for(const row of golden){
  assert.ok(Math.abs(actualCapital-row.capital)<=1,row.path+': Deal Register capital mismatch '+actualCapital);
  assert.ok(Math.abs(actualAnnual-row.profit)<=1.01,row.path+': Deal Register cashflow mismatch '+actualAnnual);
  assert.ok(Math.abs(actualRoi-(row.type==='hmo'?Math.round(row.roi):row.roi))<=0.015,row.path+': Deal Register ROI mismatch '+actualRoi);
+ // Editable expense changes must affect cash flow and ROI without rounding intermediate arithmetic.
+ const costInput=row.type==='ha'?'#boilerInput':'#cost-3';
+ const startingInput=Number(await page.locator(costInput).inputValue());
+ await page.locator(costInput).fill(String(startingInput+1.25));
+ const afterExpenseCash=cash(await page.locator(annual).textContent());
+ const afterExpenseROI=cash(await page.locator(roi).textContent());
+ assert.ok(Math.abs(afterExpenseCash-(actualAnnual-1.25))<=0.02,row.path+': £1.25 annual expense edit must reduce cash flow by exactly £1.25');
+ assert.ok(Math.abs(afterExpenseROI-(afterExpenseCash/actualCapital*100))<=0.51,row.path+': edited expense must reconcile ROI with annual cash flow/capital');
+ await page.locator(costInput).fill(String(startingInput));
+ assert.ok(Math.abs(cash(await page.locator(annual).textContent())-actualAnnual)<=0.02,row.path+': restoring expense must restore cash flow');
  if(row.type==='hmo'){
    const model=await page.evaluate(()=>compute());
    assert.ok(Math.abs(model.profit-2718.28)<0.01,'exact HMO cashflow retained beneath whole-pound display');
