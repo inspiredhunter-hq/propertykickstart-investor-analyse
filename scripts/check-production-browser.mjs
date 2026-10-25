@@ -161,7 +161,7 @@ for(const row of golden){
  // Exercise Section 3 fields at three phone widths before PDF checks.
  for(const width of [320,390,430]){
   await page.setViewportSize({width,height:844});
-  const screen=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,viewport:innerWidth}));
+  const screen=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,viewport:innerWidth,offenders:[...document.querySelectorAll('body *')].filter(e=>{const b=e.getBoundingClientRect();return b.width>0&&b.right>innerWidth+2}).slice(0,12).map(e=>({tag:e.tagName,id:e.id,className:String(e.className).slice(0,80),right:Math.round(e.getBoundingClientRect().right)}))}));
   assert.ok(screen.doc<=width+2,row.path+': horizontal page overflow at '+width+'px '+JSON.stringify(screen));
  }
  await page.setViewportSize({width:390,height:844});
