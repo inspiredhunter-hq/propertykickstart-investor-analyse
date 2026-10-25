@@ -81,7 +81,7 @@ for(const width of [320,390,430,1280]){
   const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});writeFileSync('qa-evidence/hmo-review.pdf',pdf);
   const info=spawnSync('pdfinfo',['-'],{input:pdf,encoding:'utf8'});assert.match(info.stdout,/Pages:\s+2/);
   const text=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'}).stdout;
-  assert.match(text,/5,280/);assert.match(text,/80,379/);assert.match(text,/227/);
+  assert.match(text,/5,280\.00/);assert.match(text,/80,379\.00/);assert.match(text,/226\.52/);
   assert.doesNotMatch(text,/Supplier bills included here|12% is the standard/,'print must not contain help explanations');
  }
  assert.deepEqual(errors,[]);results.push({width,result:'PASS',fee:5280,capital:80379,annualCosts:21797.72,monthlyCashflow:226.52});
