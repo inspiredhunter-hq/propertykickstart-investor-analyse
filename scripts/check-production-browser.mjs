@@ -156,7 +156,7 @@ for(const row of golden){
   : ['#costOut','#costMonthly','#profitOut','#capitalOut'];
  for(const selector of sterlingSelectors){
   const value=(await page.locator(selector).textContent()).trim();
-  assert.match(value,/^[−-]?£\\d{1,3}(?:,\\d{3})*\\.\\d{2}$/,row.path+': monetary output must display exactly two decimals at '+selector+'; got '+value);
+  assert.match(value,/^[−-]?£\d{1,3}(?:,\d{3})*\.\d{2}$/,row.path+': monetary output must display exactly two decimals at '+selector+'; got '+value);
  }
  // Exercise Section 3 fields at three phone widths before PDF checks.
  for(const width of [320,390,430]){
