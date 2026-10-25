@@ -15,7 +15,17 @@ function mount(){
   const location=document.createElement('p');location.className='pk-location';location.textContent=code+' · '+town+' · '+region;
   const descriptor=document.createElement('p');descriptor.className='pk-description';descriptor.textContent=description;
   h.append(eyebrow,title,location,descriptor);
-  target.replaceWith(h);
+  // Preserve dynamically updated homepage/HA title nodes referenced by their financial scripts.
+  const existingTitle=target.querySelector('#assessmentTitle');
+  const existingSubtitle=target.querySelector('#assessmentSubtitle');
+  if(existingTitle&&existingSubtitle){
+    existingTitle.className='pk-dynamic-title';
+    existingSubtitle.className='pk-location';
+    existingSubtitle.textContent=code+' · '+town+' · '+region+' · '+description;
+    const oldLabel=target.querySelector('.eyebrow');
+    if(oldLabel){oldLabel.textContent='PROPERTY KICKSTART · INVESTOR ANALYSER';oldLabel.classList.add('pk-eyebrow');}
+    target.classList.add('pk-universal-header');
+  }else target.replaceWith(h);
   const introHost=document.querySelector('[data-pk-header-intro]');
   if(!introHost) return;
   const intro=document.createElement('div');intro.className='pk-header-intro';
