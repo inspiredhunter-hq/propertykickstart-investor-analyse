@@ -169,13 +169,25 @@ for(const row of golden){
 
 
 
- assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
- const questionLink=page.locator('#pkQuestions a');
- assert.equal(await questionLink.getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8','existing questionnaire reused without transmitting analyser data');
- assert.equal(await questionLink.getAttribute('target'),'_blank');
- const reference=await page.locator('#pkQuestionReference').textContent();
- assert.match(reference,/(?:HA|BTL|HMO)-[A-Z]{2}-[A-Z0-9]+/,'property reference displayed');
- assert.match(await page.locator('#pkQuestions').textContent(),/cannot guarantee an answer or a personal reply/);
+ if(row.type==='btl'){
+   assert.equal(await page.locator('#pkQuestions').count(),0,'South Shields must not show duplicate legacy question panel');
+   const panel=page.locator('.question-cta');
+   assert.equal(await panel.count(),1,'one compact question panel inside VALUE');
+   assert.match(await panel.innerText(),/BTL-NE-WLETS · South Shields · North East/,'only code, town and region');
+   assert.doesNotMatch(await panel.innerText(),/John Williamson Street|NE33 5HW/,'no full address in question section');
+   assert.match(await panel.innerText(),/Elite members:[\s\S]*private 1-to-1 session/,'Elite contact options');
+   const questionLink=panel.locator('a');
+   assert.equal(await questionLink.getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8');
+   assert.equal(await questionLink.getAttribute('target'),'_blank');
+ } else {
+   assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
+   const questionLink=page.locator('#pkQuestions a');
+   assert.equal(await questionLink.getAttribute('href'),'https://forms.gle/Mk4hDeGhupuJj3ap8');
+   assert.equal(await questionLink.getAttribute('target'),'_blank');
+   const reference=await page.locator('#pkQuestionReference').textContent();
+   assert.match(reference,/(?:HA|BTL|HMO)-[A-Z]{2}-[A-Z0-9]+/,'property reference displayed');
+   assert.match(await page.locator('#pkQuestions').textContent(),/cannot guarantee an answer or a personal reply/);
+ }
  const other=row.type==='ha'?'#otherBuyingInput':'#otherAcquisition';
  const capital=row.type==='ha'?'#capitalSummary':'#capitalOut';
  const annual=row.type==='ha'?'#annual':'#profitOut';
