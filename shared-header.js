@@ -29,9 +29,10 @@ function mount(){
   const introHost=document.querySelector('[data-pk-header-intro]');
   if(!introHost) return;
   const intro=document.createElement('div');intro.className='pk-header-intro';
-  const heading=document.createElement('h2');heading.textContent='Explore the numbers for yourself';
-  const body=document.createElement('p');body.textContent='This analyser uses Property Kickstart’s standard assumptions for acquisition costs, financing and ongoing property expenses. You can change the figures to explore different scenarios and see how they could affect the potential return.';
-  intro.append(heading,body);
+  const heading=document.createElement('h2');heading.textContent='Explore the numbers.';
+  const body=document.createElement('p');body.textContent='This analyser uses Property Kickstart’s standard assumptions for acquisition costs, financing and ongoing property expenses.';
+  const scenario=document.createElement('p');scenario.textContent='Figures can be changed to explore different scenarios.';
+  intro.append(heading,body,scenario);
   const risk=document.createElement('aside');risk.className='pk-header-risk';risk.setAttribute('role','note');
   const riskTitle=document.createElement('strong');riskTitle.textContent='Investment risk';
   const riskBody=document.createElement('p');riskBody.textContent='The value of property investments can go down as well as up. Rental income and financial returns are not guaranteed.';

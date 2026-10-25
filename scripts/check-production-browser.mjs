@@ -37,6 +37,16 @@ for(const row of golden){
  const scoreIntro=page.locator('main .notice').filter({hasText:'Know your SCORE before you assess the VALUE.'});
  assert.equal(await scoreIntro.count(),1,row.path+': exactly one approved SCORE introduction required');
  assert.equal((await scoreIntro.innerText()).trim(),'Know your SCORE before you assess the VALUE.',row.path+': SCORE introduction must remain standard');
+ // Universal shared introduction must retain approved wording and paragraph separation.
+ const explainer=page.locator('.pk-header-intro');
+ assert.equal(await explainer.count(),1,row.path+': shared exploration introduction present once');
+ assert.equal((await explainer.locator('h2').innerText()).trim(),'Explore the numbers.');
+ const explanation=await explainer.locator('p').allInnerTexts();
+ assert.deepEqual(explanation,[
+   'This analyser uses Property Kickstart’s standard assumptions for acquisition costs, financing and ongoing property expenses.',
+   'Figures can be changed to explore different scenarios.'
+ ],row.path+': approved two-paragraph explanation');
+
 
 
  assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
