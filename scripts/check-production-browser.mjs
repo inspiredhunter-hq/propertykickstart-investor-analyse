@@ -182,6 +182,16 @@ for(const row of golden){
  assert.equal(text.status,0,'pdftotext must succeed');
  assert.match(text.stdout,/Other (acquisition|buying) costs/i,'edited cost must be in PDF');
  assert.match(text.stdout,/975/,'edited amount must be in PDF');
+ // Print geometry audit: detectable text must fit the A4 page, without tiny or clipped glyph boxes.
+ const bbox=spawnSync('pdftotext',['-bbox','-'],{input:pdf,encoding:'utf8'});
+ assert.equal(bbox.status,0,row.path+': PDF geometry extraction should succeed');
+ const extracted=[...bbox.stdout.matchAll(/<word xMin="([0-9.]+)" yMin="([0-9.]+)" xMax="([0-9.]+)" yMax="([0-9.]+)">/g)]
+  .map(m=>({x1:+m[1],y1:+m[2],x2:+m[3],y2:+m[4]}));
+ assert.ok(extracted.length>80,row.path+': PDF must contain enough readable selectable text');
+ const outside=extracted.filter(w=>w.x1 < -1||w.x2 > 596||w.y1 < -1||w.y2 > 843);
+ assert.equal(outside.length,0,row.path+': PDF has text outside its A4 page bounds');
+ const tiny=extracted.filter(w=>w.y2-w.y1<4.3);
+ assert.ok(tiny.length/extracted.length<0.06,row.path+': PDF has too much unusually small print');
  assert.deepEqual(pageErrors,[],row.path+' runtime errors');
  console.log('PASS '+row.path+' Deal Register, mobile, controls, no overflow, two-page PDF');
  await page.close();
