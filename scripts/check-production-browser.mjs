@@ -48,6 +48,20 @@ for(const row of golden){
    await section3.locator('#boilerInput').fill('366');
    assert.equal(await section3.locator('#runningCostsInput').count(),1,row.path+': running cost override appears in Section 3');
  } else if(row.type==='btl'){
+   const breakdown=page.locator('.cashflow-comparison');
+   assert.equal(await breakdown.locator('.comparison-header').innerText().then(t=>t.replace(/\\s+/g,' ')).then(t=>t.includes('Annual')&&t.includes('Monthly')),true,'Section 4 has annual and monthly columns');
+   assert.equal(await breakdown.locator('.comparison-row').count(),4,'four cashflow breakdown rows');
+   const rentalAnnual=cash(await page.locator('#annualOut').textContent());
+   const rentalMonthly=cash(await page.locator('#monthlyRentOut').textContent());
+   const costsAnnual=cash(await page.locator('#opexOut').textContent());
+   const costsMonthly=cash(await page.locator('#monthlyOpexOut').textContent());
+   const interestAnnual=cash(await page.locator('#interestOut').textContent());
+   const interestMonthly=cash(await page.locator('#monthlyInterestOut').textContent());
+   const netAnnual=cash(await page.locator('#profitOut').textContent());
+   const netMonthly=cash(await page.locator('#monthlyProfitOut').textContent());
+   for(const [annual,monthly] of [[rentalAnnual,rentalMonthly],[costsAnnual,costsMonthly],[interestAnnual,interestMonthly],[netAnnual,netMonthly]])assert.ok(Math.abs(annual/12-monthly)<=0.01,'monthly figure equals annual divided by 12');
+   assert.ok(Math.abs(rentalAnnual-costsAnnual-interestAnnual-netAnnual)<0.02,'annual cashflow reconciles');
+   assert.ok(Math.abs(rentalMonthly-costsMonthly-interestMonthly-netMonthly)<0.02,'monthly cashflow reconciles');
    const score=page.locator('#scoreSection');
    assert.equal(await score.locator('.score-intro').innerText(),'Know your SCORE before you assess the VALUE.');
    assert.deepEqual(await score.locator('.score-options legend strong, .score-item > label:first-child strong, .score-item > strong').allTextContents(),['S','C','O','R','E']);
