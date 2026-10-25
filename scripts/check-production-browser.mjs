@@ -233,7 +233,6 @@ for(const row of golden){
  await page.close();
 }
 }finally{await browser.close()}
-)}).count(),1,'SCORE label initial is bold');
    assert.equal(await page.locator('#spend').inputValue(),'150,000.00','spend displays pennies on initial load');
    assert.equal(await page.locator('#target').inputValue(),'1,000.00','cash flow target displays pennies on initial load');
    const fields=section3.locator('.cost-input');
