@@ -42,7 +42,7 @@ html.pk-locked body > :not(#pkDisclosureGate):not(script){display:none!important
 #pkDisclosureGate .pk-small{font-size:13px;color:#595b68}
 @media(max-width:520px){#pkDisclosureGate{margin:14px;padding:17px}#pkDisclosureGate .pk-preview{grid-template-columns:1fr}}
 @media print{html.pk-locked body > :not(#pkDisclosureGate):not(script){display:none!important}#pkDisclosureGate{display:none!important}}
-</style><script>document.documentElement.classList.add('pk-locked');</script><link rel="stylesheet" href="../question-controls.css"><script src="../question-controls.js" defer></script><link rel="stylesheet" href="../shared-header.css"/><script defer src="../shared-header.js"></script><link rel="stylesheet" href="../shared-acknowledgement.css"></head><body><section aria-labelledby="pkGateHeading" id="pkDisclosureGate">
+</style><script>document.documentElement.classList.add('pk-locked');</script><link rel="stylesheet" href="../question-controls.css"><script src="../question-controls.js" defer></script><link rel="stylesheet" href="../shared-header.css"/><script defer src="../shared-header.js"></script><link rel="stylesheet" href="../shared-acknowledgement.css"><script defer src="../shared-acknowledgement.js"></script></head><body><section aria-labelledby="pkGateHeading" id="pkDisclosureGate">
 <p class="pk-small">PROPERTY KICKSTART · INVESTOR ANALYSER</p>
 <h1 id="pkGateHeading">St Helens <span class="location-region">· North West</span></h1>
 <div class="pk-preview"><div><span>Asking price</span><strong>£220,000</strong></div><div><span>Stated monthly rent</span><strong>£2,868</strong></div></div>
@@ -99,4 +99,4 @@ function closeHelp(except){helpButtons.forEach(button=>{if(button!==except){butt
 helpButtons.forEach(button=>button.addEventListener('click',event=>{event.preventDefault();const opening=button.getAttribute('aria-expanded')!=='true';closeHelp();button.setAttribute('aria-expanded',String(opening));$(button.getAttribute('aria-controls')).hidden=!opening;}));
 document.addEventListener('click',event=>{if(!event.target.closest('.info-toggle,.info-text'))closeHelp();});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')closeHelp();});
-</script><script id="pk-disclosure-script">(function(){'use strict';const b=document.getElementById('pkAccept'),v=document.getElementById('pkReveal'),g=document.getElementById('pkDisclosureGate');b.checked=false;v.disabled=true;b.addEventListener('change',()=>v.disabled=!b.checked);v.addEventListener('click',()=>{if(!b.checked)return;document.documentElement.classList.remove('pk-locked');document.documentElement.classList.add('pk-unlocked');g.hidden=true;});})();</script></body></html>
+</script></body></html>
