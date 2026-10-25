@@ -89,7 +89,7 @@ for(const row of golden){
  assert.ok(Math.abs(actualAnnual-row.profit)<=1.01,row.path+': Deal Register cashflow mismatch '+actualAnnual);
  assert.ok(Math.abs(actualRoi-(row.type==='hmo'?Math.round(row.roi):row.roi))<=0.015,row.path+': Deal Register ROI mismatch '+actualRoi);
  // Editable expense changes must affect cash flow and ROI without rounding intermediate arithmetic.
- const costInput=row.type==='ha'?'#boilerInput':'#cost-3';
+ const costInput=row.type==='ha'?'#boilerInput':row.type==='btl'?'[data-cost="3"]':'#cost-3';
  const startingInput=Number(await page.locator(costInput).inputValue());
  await page.locator(costInput).fill(String(startingInput+1.25));
  const afterExpenseCash=cash(await page.locator(annual).textContent());
