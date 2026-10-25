@@ -65,7 +65,7 @@ for(const row of golden){
    assert.equal(await page.locator('#spend').isEditable(),true);
    await page.locator('#spend').fill('120000.50');
    await page.locator('#reserve').fill('15');
-   assert.ok(Math.abs(cash(await page.locator('#spend').inputValue())-120000.50)<0.01,'manual investor budget must survive finance changes');
+   assert.ok(Math.abs(cash(await page.locator('#spend').inputValue())-120000.50)<0.01,'manual investor budget must survive finance changes; got '+await page.locator('#spend').inputValue());
    await page.locator('#restoreBudget').click();
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','restore enables calculated budget');
    const fields=section3.locator('.cost-input');
