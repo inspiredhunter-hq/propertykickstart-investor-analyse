@@ -18,3 +18,4 @@ jobs:
         with:
           node-version: '22'
       - run: node templates/btl-v1/test.mjs
+      - run: node templates/btl-v1/test-pipeline.mjs
