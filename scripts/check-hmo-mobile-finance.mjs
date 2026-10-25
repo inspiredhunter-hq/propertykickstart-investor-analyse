@@ -16,7 +16,9 @@ for(const width of [320,390,430,1280]){
  await page.goto(target);
  assert.equal(await page.locator('#pkGateHeading').textContent(),'St Helens · North West');
  await page.locator('#pkAccept').check();await page.locator('#pkReveal').click();
- assert.match(await page.locator('main .notice').first().textContent(),/Property Kickstart’s financial model/);
+ assert.match(await page.locator('main .pk-header-intro').textContent(),/standard assumptions for acquisition costs/);
+ assert.match(await page.locator('main .pk-header-risk').textContent(),/financial returns are not guaranteed/);
+ assert.equal(await page.locator('.pk-universal-header .pk-location').textContent(),'HMO-NW-2S98D · St Helens · North West');
  assert.doesNotMatch(await page.locator('main').textContent(),/Deal Register/);
  const guide=await page.locator('.score-guide li').allTextContents();assert.deepEqual(guide.map(t=>t[0]),['S','C','O','R','E']);
  const overflow=await page.evaluate(()=>({width:innerWidth,doc:document.documentElement.scrollWidth,bad:[...document.querySelectorAll('main input:not([type=hidden]),main select')].filter(e=>{const b=e.getBoundingClientRect(),c=e.closest('.card').getBoundingClientRect();return b.width&& (b.right>c.right+1||b.left<c.left-1)}).map(e=>e.id)}));
