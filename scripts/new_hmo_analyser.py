@@ -43,9 +43,9 @@ def main():
        "North West":d["region"],
        "Seven lettable rooms":d["room_description"],
        "HMO-NW-2S98D":code,
-       "£2,868 a month in rent. What could an investor keep?":d["headline"],
-       "£220,000":f"£{f['price']:,.0f}",
-       "£2,868":f"£{f['rent']/12:,.0f}"
+       "£2,868.00 a month in rent. What could an investor keep?":d["headline"],
+       "£220,000.00":f"£{f['price']:,.2f}",
+       "£2,868.00":f"£{f['rent']/12:,.2f}"
     }
     for old,new in original.items():
         if old not in s: raise SystemExit("Approved template changed: cannot locate "+old)
