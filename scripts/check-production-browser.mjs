@@ -150,6 +150,21 @@ for(const row of golden){
  await page.locator(other).fill('975');
  await page.locator(other).dispatchEvent('input');
  assert.ok(Math.abs(cash(await page.locator(capital).textContent())-actualCapital-975)<=1,'additional cost must increase capital by £975');
+ // ACT-882: explicit two-decimal rendering on key sterling outputs.
+ const sterlingSelectors=row.type==='ha'
+  ? ['#haAnnualCostTotal','#haMonthlyCostTotal','#annual','#monthlyFinancial','#capitalSummary']
+  : ['#costOut','#costMonthly','#profitOut','#capitalOut'];
+ for(const selector of sterlingSelectors){
+  const value=(await page.locator(selector).textContent()).trim();
+  assert.match(value,/^[−-]?£\\d{1,3}(?:,\\d{3})*\\.\\d{2}$/,row.path+': monetary output must display exactly two decimals at '+selector+'; got '+value);
+ }
+ // Exercise Section 3 fields at three phone widths before PDF checks.
+ for(const width of [320,390,430]){
+  await page.setViewportSize({width,height:844});
+  const screen=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,viewport:innerWidth}));
+  assert.ok(screen.doc<=width+2,row.path+': horizontal page overflow at '+width+'px '+JSON.stringify(screen));
+ }
+ await page.setViewportSize({width:390,height:844});
  const metrics=await page.evaluate(()=>({documentWidth:document.documentElement.scrollWidth,viewportWidth:window.innerWidth}));
  assert.ok(metrics.documentWidth<=metrics.viewportWidth+2,row.path+': horizontal mobile overflow '+JSON.stringify(metrics));
  await page.screenshot({path:'qa-evidence/'+row.path.replaceAll('/','-')+'.png',fullPage:true});
