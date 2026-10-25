@@ -96,10 +96,10 @@ for(const row of golden){
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent()))<0.01,'investor can remove contingency entirely');
    assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-50649)<0.01,'zero contingency has no uplift');
    await card2.locator('#reserve').fill('10');
-   assert.equal((await page.locator('#depositPercentOut').innerText()).trim(),'25.00%','75% LTV means 25% calculated deposit');
+   assert.equal((await page.locator('#depositPercentOut').innerText()).trim(),'25%','75% LTV means 25% calculated deposit');
    assert.ok(Math.abs(cash(await page.locator('#depositOut').innerText())-33750)<0.01,'deposit amount follows LTV');
    await page.locator('#ltv').fill('65');
-   assert.equal((await page.locator('#depositPercentOut').innerText()).trim(),'35.00%','deposit percentage follows editable LTV');
+   assert.equal((await page.locator('#depositPercentOut').innerText()).trim(),'35%','deposit percentage follows editable LTV');
    assert.ok(Math.abs(cash(await page.locator('#depositOut').innerText())-47250)<0.01,'deposit recalculates after LTV edit');
    await page.locator('#ltv').fill('75');
    assert.equal(await page.locator('#spend').getAttribute('readonly'),'','suggested budget defaults read-only');
