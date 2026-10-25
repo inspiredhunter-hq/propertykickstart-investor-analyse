@@ -119,7 +119,7 @@ for(const row of golden){
    assert.ok(Math.abs(cash(await page.locator('#availableOut').textContent())-(301421*0.8/3))<0.01,'reserve reduces each property allocation without whole-pound display rounding');
    const portfolio=await page.evaluate(()=>compute());
    assert.ok(Math.abs(portfolio.available-301421*0.8)<0.01,'total portfolio capital after contingency');
-   assert.ok(Math.abs(cash(await page.locator('#startingCapitalOut').textContent())-100473.75)<0.01,'starting capital allocated per property without whole-pound rounding');
+   assert.ok(Math.abs(cash(await page.locator('#startingCapitalOut').textContent())-(301421/3))<0.01,'starting capital allocated per property without whole-pound rounding');
    await page.locator('#customBudget').check();
    assert.equal(await page.locator('#spend').isEditable(),true,'actual investor capital can be edited');
    await page.locator('#spend').fill('100000');
