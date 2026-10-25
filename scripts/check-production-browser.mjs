@@ -183,7 +183,7 @@ for(const row of golden){
  assert.match(text.stdout,/Other (acquisition|buying) costs/i,'edited cost must be in PDF');
  assert.match(text.stdout,/975/,'edited amount must be in PDF');
  // Print geometry audit: detectable text must fit the A4 page, without tiny or clipped glyph boxes.
- const bbox=spawnSync('pdftotext',['-bbox','-'],{input:pdf,encoding:'utf8'});
+ const bbox=spawnSync('pdftotext',['-bbox','-','-'],{input:pdf,encoding:'utf8'});
  assert.equal(bbox.status,0,row.path+': PDF geometry extraction should succeed');
  const extracted=[...bbox.stdout.matchAll(/<word xMin="([0-9.]+)" yMin="([0-9.]+)" xMax="([0-9.]+)" yMax="([0-9.]+)">/g)]
   .map(m=>({x1:+m[1],y1:+m[2],x2:+m[3],y2:+m[4]}));
