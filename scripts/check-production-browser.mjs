@@ -33,6 +33,11 @@ for(const row of golden){
  assert.equal(await page.locator(reveal).isEnabled(),true);
  await page.locator(reveal).click();
  assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
+ // Governance invariant: every strategy and the homepage use the exact approved SCORE copy.
+ const scoreIntro=page.locator('main .notice').filter({hasText:'Know your SCORE before you assess the VALUE.'});
+ assert.equal(await scoreIntro.count(),1,row.path+': exactly one approved SCORE introduction required');
+ assert.equal((await scoreIntro.innerText()).trim(),'Know your SCORE before you assess the VALUE.',row.path+': SCORE introduction must remain standard');
+
 
  assert.equal(await page.locator('#pkQuestions').isVisible(),true,'question panel visible after acknowledgement');
  const questionLink=page.locator('#pkQuestions a');
