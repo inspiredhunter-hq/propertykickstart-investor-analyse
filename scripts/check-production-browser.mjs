@@ -56,7 +56,7 @@ for(const row of golden){
    assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
    const card2=page.locator('.acquisition-card');
    assert.equal(await card2.locator('#price').inputValue(),'135,000','pence hidden by default for whole-pound figures');
-   assert.equal(await card2.locator('#price').evaluate(e=>e.nextElementSibling?.id||e.parentElement.nextElementSibling?.id),'depositPercentOut','deposit percentage follows asking price');
+   assert.equal(await card2.locator('#price').evaluate(e=>e.parentElement.nextElementSibling?.querySelector('#depositPercentOut')?.id),'depositPercentOut','deposit percentage follows asking price');
    assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent())-5064.90)<0.01,'10 percent contingency calculated on unreserved capital');
    assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-55713.90)<0.01,'total includes contingency');
