@@ -47,6 +47,22 @@ for(const row of golden){
    assert.ok(Math.abs(cash(await monthlyCost.textContent())-(1171/12))<0.02,row.path+': editable boiler flows to monthly total');
    await section3.locator('#boilerInput').fill('366');
    assert.equal(await section3.locator('#runningCostsInput').count(),1,row.path+': running cost override appears in Section 3');
+ } else if(row.type==='btl'){
+   const fields=section3.locator('.cost-input');
+   assert.equal(await fields.count(),12,'BTL retains all twelve annual operating cost inputs');
+   assert.equal(await fields.first().inputValue(),'1,362.00','initial management cost is comma-formatted with pence');
+   assert.equal(await section3.locator('[data-cost="5"]').inputValue(),'0.00','zero annual cost shows pence');
+   const insurance=section3.locator('[data-cost="3"]');
+   assert.equal(await insurance.inputValue(),'285.00');
+   await insurance.focus();
+   assert.equal(await insurance.inputValue(),'285.00','focus keeps an ungrouped editable decimal');
+   await insurance.fill('1234.56');
+   await insurance.blur();
+   assert.equal(await insurance.inputValue(),'1,234.56','edited annual cost is displayed with grouping and pence');
+   assert.ok(Math.abs(cash(await section3.locator('#costOut').textContent())-5646.56)<0.01,'annual operating cost total reconciles at pence precision');
+   await insurance.focus();await insurance.fill('285.00');await insurance.blur();
+   assert.equal(await insurance.inputValue(),'285.00','restored value stays consistently formatted');
+   assert.ok(Math.abs(cash(await section3.locator('#costOut').textContent())-4697)<0.01,'restored annual total matches approved original');
  } else if(row.type==='hmo'){
    assert.equal(await section3.locator('.cost-input').count(),9,'preserve all nine HMO cost inputs');
    assert.equal(await section3.locator('h3').filter({hasText:'Additional HMO operating costs'}).count(),1);
