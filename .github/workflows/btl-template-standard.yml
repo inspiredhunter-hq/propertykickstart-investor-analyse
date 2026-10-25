@@ -1,0 +1,20 @@
+name: BTL template standard v1 parity
+on:
+  pull_request:
+    paths:
+      - 'templates/btl-v1/**'
+      - 'BTL-NE-WLETS/index.html'
+  push:
+    branches: [main]
+    paths:
+      - 'templates/btl-v1/**'
+      - 'BTL-NE-WLETS/index.html'
+jobs:
+  validate-btl-standard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node templates/btl-v1/test.mjs
