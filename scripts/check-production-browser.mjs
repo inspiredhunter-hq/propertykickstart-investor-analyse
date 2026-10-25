@@ -55,6 +55,14 @@ for(const row of golden){
    assert.equal(await score.locator('input[name="riskChoice"]:checked').count(),0,'no risk option preselected');
    assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
    const card2=page.locator('.acquisition-card');
+   const help=card2.locator('.contingency-help');
+   assert.equal(await help.count(),1,'contingency help icon exists');
+   assert.equal(await card2.locator('.row.total').innerText().then(t=>t.includes('contingency *')),false,'no redundant asterisk');
+   await help.locator('summary').click();
+   const helpBox=await help.locator(':scope > span').boundingBox(), cardBox=await card2.boundingBox();
+   assert.ok(helpBox && cardBox && helpBox.x>=cardBox.x-1 && helpBox.x+helpBox.width<=cardBox.x+cardBox.width+1,'expanded contingency help stays within Section 2');
+   assert.ok(helpBox.width>=180,'expanded mobile help must be readable, not a narrow strip');
+   await help.locator('summary').click();
    assert.equal(await card2.locator('#price').inputValue(),'135,000','pence hidden by default for whole-pound figures');
    assert.equal(await card2.locator('#price').evaluate(e=>e.parentElement.nextElementSibling?.querySelector('#depositPercentOut')?.id),'depositPercentOut','deposit percentage follows asking price');
    assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
