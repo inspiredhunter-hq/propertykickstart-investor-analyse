@@ -55,6 +55,18 @@ for(const row of golden){
    assert.equal(await score.locator('input[name="riskChoice"]:checked').count(),0,'no risk option preselected');
    assert.equal(await page.locator('#reserve').evaluate(x=>x.closest('.card').querySelector('h2').textContent.startsWith('2.')),true,'contingency belongs in section 2');
    const card2=page.locator('.acquisition-card');
+   const allTips=page.locator('details.info-tip');
+   const contingencyTip=page.locator('.contingency-help');
+   await contingencyTip.locator('summary').click();
+   assert.equal(await contingencyTip.evaluate(x=>x.open),true,'contingency help toggled on');
+   const stampTip=page.locator('details.info-tip').filter({has:page.locator('summary[aria-label="Stamp Duty information"]')});
+   await stampTip.locator('summary').click();
+   await page.waitForFunction(()=>document.querySelectorAll('details.info-tip[open]').length===1);
+   assert.equal(await stampTip.evaluate(x=>x.open),true,'second help opens');
+   assert.equal(await contingencyTip.evaluate(x=>x.open),false,'opening second help automatically closes first');
+   await stampTip.locator('summary').click();
+   assert.equal(await stampTip.evaluate(x=>x.open),false,'same help icon toggles closed');
+   assert.equal(await allTips.evaluateAll(nodes=>nodes.filter(x=>x.open).length),0,'no lingering help explanations');
    const help=card2.locator('.contingency-help');
    assert.equal(await help.count(),1,'contingency help icon exists');
    assert.equal(await card2.locator('.row.total').innerText().then(t=>t.includes('contingency *')),false,'no redundant asterisk');
