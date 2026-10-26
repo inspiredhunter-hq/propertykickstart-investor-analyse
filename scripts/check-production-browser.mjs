@@ -305,6 +305,24 @@ for(const row of golden){
    assert.match(unitText.stdout,/540\.00/);
    assert.match(unitText.stdout,/595\.00/);
    await page.locator('#includeUnitPage').uncheck();
+   // A print action must flag missing SCORE inputs and keep all existing figures intact.
+   await page.evaluate(()=>{window.__printCalls=0;window.print=()=>{window.__printCalls++}});
+   await page.locator('#printBtn').click();
+   assert.equal(await page.locator('#scorePrintReminder').isVisible(),true,'missing SCORE should prompt before printing');
+   assert.match(await page.locator('#scoreMissingText').innerText(),/Cash Flow objective/);
+   assert.match(await page.locator('#scoreMissingText').innerText(),/Risk preference/);
+   assert.equal(await page.evaluate(()=>window.__printCalls),0,'prompt must not print immediately');
+   await page.locator('#scoreCompleteBtn').click();
+   assert.equal(await page.evaluate(()=>document.activeElement?.name),'cashflowMode','jump to first missing SCORE choice');
+   await page.locator('input[name="cashflowMode"][value="explore"]').check();
+   await page.locator('#printBtn').click();
+   assert.match(await page.locator('#scoreMissingText').innerText(),/Risk preference/);
+   await page.locator('#scorePrintAnywayBtn').click();
+   assert.equal(await page.evaluate(()=>window.__printCalls),1,'continue anyway invokes print');
+   await page.locator('input[name="riskChoice"][value="Help me understand"]').check();
+   await page.locator('#printBtn').click();
+   assert.equal(await page.evaluate(()=>window.__printCalls),2,'completed SCORE prints without prompt');
+   assert.equal(await page.locator('#scorePrintReminder').isVisible(),false);
  }
 
  const text=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'});
