@@ -16,16 +16,16 @@ for(const k of Object.keys(data))if(!tokens.includes(k))throw new Error('Unknown
 for(const k of tokens){
  const value=data[k];
  if(k==='PROPERTY_CODE'&&!/^BTL-[A-Z0-9-]+$/.test(String(value)))throw new Error('Invalid BTL property code');
- if((k==='PRICE'||k==='RENT'||k==='LTV'||k==='RATE'||k==='RESERVE'||k==='MANAGEMENTRATE'||k.startsWith('COST_')||['STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','STRESSRATESLIDER','STRESSRATE','STRESSRENTSLIDER','STRESSRENTMONTHLY','STRESSCOSTSSLIDER','STRESSCOSTSMONTHLY'].includes(k))&&(!Number.isFinite(Number(value))||Number(value)<0))throw new Error('Invalid non-negative numeric value: '+k);
+ if((k==='PRICE'||k==='RENT_MONTHLY'||k==='LTV'||k==='RATE'||k==='RESERVE'||k==='MANAGEMENTRATE'||k.startsWith('COST_')||['STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','STRESSRATESLIDER','STRESSRATE','STRESSRENTSLIDER','STRESSRENTMONTHLY','STRESSCOSTSSLIDER','STRESSCOSTSMONTHLY'].includes(k))&&(!Number.isFinite(Number(value))||Number(value)<0))throw new Error('Invalid non-negative numeric value: '+k);
  if(typeof value==='string'&&/[<>]/.test(value))throw new Error('Markup is not allowed in property field: '+k);
 }
-assert.equal(Number(data.RENT),Number(data.STRESSRENTMONTHLY)*12,'Default stress rent must equal annual rental income');
+assert.equal(Number(data.RENT_MONTHLY),Number(data.STRESSRENTMONTHLY),'Default stress rent must equal annual rental income');
 assert.equal(Number(data.STRESSRATE),Number(data.RATE),'Default scenario rate must match main financing');
 const costs=Object.keys(data).filter(k=>k.startsWith('COST_')).reduce((sum,k)=>sum+Number(data[k]),0);
 assert.ok(Math.abs(costs/12-Number(data.STRESSCOSTSMONTHLY))<0.011,'Stress operating-cost defaults must reconcile with annual costs');
 const money=n=>'£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 assert.equal(data.ASKING_PRICE_DISPLAY,money(Number(data.PRICE)),'Asking price header must match numeric model');
-assert.equal(data.MONTHLY_RENT_DISPLAY,money(Number(data.RENT)/12),'Rent header must match numeric model');
+assert.equal(data.MONTHLY_RENT_DISPLAY,money(Number(data.RENT_MONTHLY)),'Rent header must match numeric model');
 const rendered=template.replace(/\{\{([A-Z0-9_]+)\}\}/g,(_,k)=>String(data[k]));
 if(/\{\{[^}]+\}\}/.test(rendered))throw new Error('Unresolved BTL placeholder');
 mkdirSync(dirname(resolve(outputPath)),{recursive:true});
