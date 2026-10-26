@@ -289,6 +289,24 @@ for(const row of golden){
  assert.equal(info.status,0,'pdfinfo must read generated PDF');
  const pages=Number(info.stdout.match(/^Pages:\s*(\d+)/m)?.[1]);
  assert.equal(pages,2,row.path+' must produce 2 A4 pages');
+ if(row.type==='btl'){
+   assert.equal(await page.locator('#unitCount').textContent(),'2','BTL two units displayed');
+   assert.equal(await page.locator('#unitDetails').evaluate(el=>el.open),false,'unit detail collapsed by default');
+   await page.locator('#unitDetails summary').click();
+   assert.equal(await page.locator('#unitRows tbody tr').count(),2,'two unit rents rendered');
+   assert.doesNotMatch(await page.locator('#unitRows').innerText(),/John Williamson Street|NE33 5HW/,'unit panel contains no full address');
+   assert.equal(await page.locator('#includeUnitPage').isChecked(),false,'optional unit page starts unchecked');
+   await page.locator('#includeUnitPage').check();
+   const unitPdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+   const unitInfo=spawnSync('pdfinfo',['-'],{input:unitPdf,encoding:'utf8'});
+   assert.equal(Number(unitInfo.stdout.match(/^Pages:\s*(\d+)/m)?.[1]),3,'opt-in print must produce exactly three pages');
+   const unitText=spawnSync('pdftotext',['-','-'],{input:unitPdf,encoding:'utf8'});
+   assert.match(unitText.stdout,/Unit-by-unit rental breakdown/);
+   assert.match(unitText.stdout,/540\.00/);
+   assert.match(unitText.stdout,/595\.00/);
+   await page.locator('#includeUnitPage').uncheck();
+ }
+
  const text=spawnSync('pdftotext',['-','-'],{input:pdf,encoding:'utf8'});
  assert.equal(text.status,0,'pdftotext must succeed');
  assert.match(text.stdout,/Other (acquisition|buying) costs/i,'edited cost must be in PDF');

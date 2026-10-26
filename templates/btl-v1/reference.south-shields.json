@@ -34,5 +34,6 @@
   "COST_9": 101,
   "COST_10": 0,
   "PROPERTY_SUMMARY": "Two flats - 5 beds",
-  "PROPERTY_PRINT_SUMMARY": "5 bedrooms across 2 flats"
+  "PROPERTY_PRINT_SUMMARY": "5 bedrooms across 2 flats",
+  "UNIT_RENTAL_BREAKDOWN_JSON": "{\"schemaVersion\":1,\"unitCount\":2,\"units\":[{\"id\":\"flat-1\",\"label\":\"Flat 1\",\"type\":\"flat\",\"bedrooms\":2,\"description\":\"Ground-floor flat\",\"monthlyRentGBP\":540},{\"id\":\"flat-2\",\"label\":\"Flat 2\",\"type\":\"flat\",\"bedrooms\":3,\"description\":\"Upper flat\",\"monthlyRentGBP\":595}]}"
 }
