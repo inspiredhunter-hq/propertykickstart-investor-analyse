@@ -299,7 +299,7 @@ for(const row of golden){
    await page.locator('#includeUnitPage').check();
    const unitPdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
    const unitInfo=spawnSync('pdfinfo',['-'],{input:unitPdf,encoding:'utf8'});
-   assert.equal(Number(unitInfo.stdout.match(/^Pages:\\s*(\\d+)/m)?.[1]),3,'opt-in print must produce exactly three pages');
+   assert.equal(Number(unitInfo.stdout.match(/^Pages:\s*(\d+)/m)?.[1]),3,'opt-in print must produce exactly three pages');
    const unitText=spawnSync('pdftotext',['-','-'],{input:unitPdf,encoding:'utf8'});
    assert.match(unitText.stdout,/Unit-by-unit rental breakdown/);
    assert.match(unitText.stdout,/540\.00/);
