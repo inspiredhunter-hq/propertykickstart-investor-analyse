@@ -16,7 +16,7 @@ function mount(){
   const descriptor=document.createElement('p');descriptor.className='pk-description';descriptor.textContent=description;
   h.append(eyebrow,title);
   // The South Shields summary is shown only within the post-acknowledgement analyser.
-  if(!data.propertySummary) h.append(location,descriptor);
+  if(data.propertySummary){const propertyCode=document.createElement('p');propertyCode.className='pk-property-code';propertyCode.textContent='Property Code: '+code;h.append(propertyCode);}else h.append(location,descriptor);
   // Preserve dynamically updated homepage/HA title nodes referenced by their financial scripts.
   const existingTitle=target.querySelector('#assessmentTitle');
   const existingSubtitle=target.querySelector('#assessmentSubtitle');
