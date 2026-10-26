@@ -18,7 +18,7 @@ const text=(v,k)=>{if(missing(v))throw Error('Missing required property fact: '+
 const fmt=n=>'£'+n.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});
 const defs={
  PROPERTY_CODE:'Property Code',TOWN:'Town',REGION:'UK Region',PRICE:'Asking Price',
- RENT:'Annual Rent (PDF)',MANAGEMENTRATE:'Management %',RATE:'Interest Rate % Assumption',
+ RENT_MONTHLY:'Rent pm (Model)',MANAGEMENTRATE:'Management %',RATE:'Interest Rate % Assumption',
  STAMP:'Stamp Duty',LEGAL:'Legal Fees',BROKER:'Brokerage',ARRANGEMENT:'Mortgage Arrangement Fee (£)',SURVEY:'Survey / Valuation Cost (£)',
  COST_0:'Annual Management Cost',COST_1:'Annual Maintenance Allowance',COST_2:'Annual Void Allowance',COST_3:'Annual Insurance',
  COST_11:'Boiler Heating Plumbing Cover pa',COST_4:'Annual Compliance and Licensing Costs',
@@ -28,14 +28,15 @@ for(const k of ['PROPERTY_CODE','TOWN','REGION'])data[k]=text(val(defs[k]),defs[
 assert.match(data.PROPERTY_CODE,/^BTL-[A-Z0-9-]+$/,'BTL property code required');
 data.PRICE=number(val(defs.PRICE),'Asking Price');
 const annual=val('Total Annual Rent (Calc)'),sourceRent=val('Annual Rent (PDF)'),monthly=val('Rent pm (Model)')??val('Monthly Rent (PDF)');
-if(!missing(annual))data.RENT=number(annual,'Total Annual Rent (Calc)');
-else if(!missing(sourceRent))data.RENT=number(sourceRent,'Annual Rent (PDF)');
-else if(!missing(monthly))data.RENT=number(monthly,'Monthly rent')*12;
+if(!missing(monthly))data.RENT_MONTHLY=number(monthly,'Monthly rent');
+else if(!missing(annual))data.RENT_MONTHLY=number(annual,'Total Annual Rent (Calc)')/12;
+else if(!missing(sourceRent))data.RENT_MONTHLY=number(sourceRent,'Annual Rent (PDF)')/12;
 else throw Error('Missing evidenced rent in Pipeline');
-if(!missing(monthly)&&Math.abs(Number(monthly)*12-data.RENT)>0.02)throw Error('Conflicting monthly and annual rental values');
-data.ASKING_PRICE_DISPLAY=fmt(data.PRICE);data.MONTHLY_RENT_DISPLAY=fmt(data.RENT/12);
-// Descriptive/public facts must be explicitly reviewed; no full address auto-publication.
-for(const k of ['DISPLAY_ADDRESS','PROPERTY_DESCRIPTION'])data[k]=text(approved.values?.[k],k+' (public clearance required)');
+if(!missing(annual)&&Math.abs(Number(annual)-data.RENT_MONTHLY*12)>0.02)throw Error('Conflicting monthly and annual rental values');
+data.ASKING_PRICE_DISPLAY=fmt(data.PRICE);data.MONTHLY_RENT_DISPLAY=fmt(data.RENT_MONTHLY);
+// Approved public summary; never publish internal street address.
+data.PROPERTY_SUMMARY=text(approved.values?.PROPERTY_SUMMARY??approved.values?.PROPERTY_DESCRIPTION,'PROPERTY_SUMMARY (public clearance required)');
+data.PROPERTY_PRINT_SUMMARY=text(approved.values?.PROPERTY_PRINT_SUMMARY??approved.values?.PROPERTY_SUMMARY??approved.values?.PROPERTY_DESCRIPTION,'PROPERTY_PRINT_SUMMARY (public clearance required)');
 const numeric=['LTV','RATE','RESERVE','MANAGEMENTRATE','STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','COST_0','COST_1','COST_2','COST_3','COST_11','COST_4','COST_5','COST_6','COST_7','COST_8','COST_9','COST_10'];
 for(const k of numeric){
  const from=defs[k]?val(defs[k]):null;
@@ -46,7 +47,7 @@ for(const k of numeric){
 }
 const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+b,0);
 data.STRESSRATE=data.RATE;data.STRESSRATESLIDER=data.RATE;
-data.STRESSRENTMONTHLY=data.RENT/12;data.STRESSRENTSLIDER=data.RENT/12;
+data.STRESSRENTMONTHLY=data.RENT_MONTHLY;data.STRESSRENTSLIDER=data.RENT_MONTHLY;
 data.STRESSCOSTSMONTHLY=Number((sum/12).toFixed(2));data.STRESSCOSTSSLIDER=data.STRESSCOSTSMONTHLY;
 // Explicitly require independent property-code match before applying any overrides.
 assert.equal(approved.propertyCode,data.PROPERTY_CODE,'Assumptions must be approved for this exact property');

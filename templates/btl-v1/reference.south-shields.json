@@ -2,12 +2,10 @@
   "PROPERTY_CODE": "BTL-NE-WLETS",
   "TOWN": "South Shields",
   "REGION": "North East",
-  "DISPLAY_ADDRESS": "John Williamson Street, South Shields, NE33 5HW",
-  "PROPERTY_DESCRIPTION": "Two apartments (tenure unverified)",
   "MONTHLY_RENT_DISPLAY": "£1,135.00",
   "ASKING_PRICE_DISPLAY": "£135,000.00",
   "PRICE": 135000,
-  "RENT": 13620,
+  "RENT_MONTHLY": 1135,
   "LTV": 75,
   "RATE": 6,
   "STAMP": 6950,
@@ -34,5 +32,7 @@
   "COST_7": 0,
   "COST_8": 300,
   "COST_9": 101,
-  "COST_10": 0
+  "COST_10": 0,
+  "PROPERTY_SUMMARY": "Two flats - 5 beds",
+  "PROPERTY_PRINT_SUMMARY": "5 bedrooms across 2 flats"
 }
