@@ -306,7 +306,7 @@ for(const row of golden){
    assert.match(unitText.stdout,/595\.00/);
    await page.locator('#includeUnitPage').uncheck();
    // A print action must flag missing SCORE inputs and keep all existing figures intact.
-   await page.evaluate(()=>{window.__printCalls=0;window.print=()=>{window.__printCalls++}});
+   await page.evaluate(()=>{document.querySelectorAll('input[name="cashflowMode"],input[name="riskChoice"]').forEach(el=>{el.checked=false});window.__printCalls=0;window.print=()=>{window.__printCalls++}});
    await page.locator('#printBtn').click();
    assert.equal(await page.locator('#scorePrintReminder').isVisible(),true,'missing SCORE should prompt before printing');
    assert.match(await page.locator('#scoreMissingText').innerText(),/Cash Flow objective/);
