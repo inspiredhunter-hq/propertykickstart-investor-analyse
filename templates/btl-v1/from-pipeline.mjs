@@ -47,7 +47,7 @@ for(const k of numeric){
 }
 const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+b,0);
 data.STRESSRATE=data.RATE;data.STRESSRATESLIDER=data.RATE;
-data.STRESSRENTMONTHLY=data.RENT_MONTHLY;data.STRESSRENTSLIDER=data.RENT/12;
+data.STRESSRENTMONTHLY=data.RENT_MONTHLY;data.STRESSRENTSLIDER=data.RENT_MONTHLY;
 data.STRESSCOSTSMONTHLY=Number((sum/12).toFixed(2));data.STRESSCOSTSSLIDER=data.STRESSCOSTSMONTHLY;
 // Explicitly require independent property-code match before applying any overrides.
 assert.equal(approved.propertyCode,data.PROPERTY_CODE,'Assumptions must be approved for this exact property');
