@@ -14,8 +14,9 @@ function mount(){
   const title=document.createElement('h1');title.textContent=rent+' a month in rent. What could an investor keep?';
   const location=document.createElement('p');location.className='pk-location';location.textContent=code+' · '+town+' · '+region;
   const descriptor=document.createElement('p');descriptor.className='pk-description';descriptor.textContent=description;
-  h.append(eyebrow,title,location,descriptor);
-  if(data.propertySummary){location.textContent=data.propertySummary+' · '+town+' · '+region;const propertyCode=document.createElement('p');propertyCode.className='pk-property-code';propertyCode.textContent='Property Code: '+code;h.append(propertyCode);}
+  h.append(eyebrow,title);
+  // The South Shields summary is shown only within the post-acknowledgement analyser.
+  if(data.propertySummary){const propertyCode=document.createElement('p');propertyCode.className='pk-property-code';propertyCode.textContent='Property Code: '+code;h.append(propertyCode);}else h.append(location,descriptor);
   // Preserve dynamically updated homepage/HA title nodes referenced by their financial scripts.
   const existingTitle=target.querySelector('#assessmentTitle');
   const existingSubtitle=target.querySelector('#assessmentSubtitle');
