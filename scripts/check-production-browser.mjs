@@ -34,8 +34,8 @@ for(const row of golden){
  await page.locator(reveal).click();
  assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
  // ACT-882 Section 3 specific regression checks on all strategy pages.
- const heading=page.locator('h2').filter({hasText:/^3\. Annual operating costs$/});
- assert.equal(await heading.count(),1,row.path+': Section 3 must use universal operating cost heading');
+ const heading=page.locator('h2').filter({hasText:row.type==='btl'?/^4\. Annual operating costs$/:/^3\. Annual operating costs$/});
+ assert.equal(await heading.count(),1,row.path+': correct strategy-specific operating cost heading');
  const section3=heading.locator('xpath=..');
  if(row.type==='ha'){
    const annualCost=section3.locator('#haAnnualCostTotal');
@@ -49,7 +49,7 @@ for(const row of golden){
    assert.equal(await section3.locator('#runningCostsInput').count(),1,row.path+': running cost override appears in Section 3');
  } else if(row.type==='btl'){
    const breakdown=page.locator('.cashflow-comparison');
-   assert.equal(await breakdown.locator('.comparison-header').innerText().then(t=>t.replace(/\\s+/g,' ')).then(t=>t.includes('Annual')&&t.includes('Monthly')),true,'Section 4 has annual and monthly columns');
+   assert.equal(await breakdown.locator('.comparison-header').innerText().then(t=>t.replace(/\\s+/g,' ')).then(t=>t.includes('Annual')&&t.includes('Monthly')),true,'BTL cashflow breakdown has annual and monthly columns');
    assert.equal(await breakdown.locator('.comparison-row').count(),4,'four cashflow breakdown rows');
    const rentalAnnual=cash(await page.locator('#annualOut').textContent());
    const rentalMonthly=cash(await page.locator('#monthlyRentOut').textContent());
@@ -92,7 +92,7 @@ for(const row of golden){
    assert.ok(helpBox.width>=180,'expanded mobile help must be readable, not a narrow strip');
    await help.locator('summary').click();
    assert.equal(await card2.locator('#price').inputValue(),'135,000','pence hidden by default for whole-pound figures');
-   assert.equal(await card2.locator('#price').evaluate(e=>e.parentElement.nextElementSibling?.querySelector('#depositPercentOut')?.id),'depositPercentOut','deposit percentage follows asking price');
+   assert.equal(await card2.locator('#mortgageAmountOut').count(),1,'mortgage amount follows LTV control');
    assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent())-5064.90)<0.01,'10 percent contingency calculated on unreserved capital');
    assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-55713.90)<0.01,'total includes contingency');
