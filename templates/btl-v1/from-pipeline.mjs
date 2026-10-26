@@ -41,8 +41,8 @@ if(unitText.startsWith('{')){
  try{parsedUnitData=JSON.parse(unitText)}catch{throw Error('Invalid Unit Rental Breakdown JSON')}
 }else{
  // Human-readable Pipeline input: "Two units: Unit 1: £540 and Unit 2: £595".
- const chunks=unitText.replace(/^\\s*(?:two|three|four|five|\\d+)\\s+units?\\s*:\\s*/i,'').split(/\\s*(?:,|;|\\band\\b)\\s*(?=Unit\\s+\\d+\\s*:)/i);
- const matches=chunks.map(s=>s.match(/^\\s*Unit\\s+(\\d+)\\s*:\\s*£?\\s*([\\d,]+(?:\\.\\d{1,2})?)\\s*$/i));
+ const chunks=unitText.replace(/^\s*(?:two|three|four|five|\d+)\s+units?\s*:\s*/i,'').split(/\s*(?:,|;|\band\b)\s*(?=Unit\s+\d+\s*:)/i);
+ const matches=chunks.map(s=>s.match(/^\s*Unit\s+(\d+)\s*:\s*£?\s*([\d,]+(?:\.\d{1,2})?)\s*$/i));
  if(matches.some(m=>!m)||matches.length===0)throw Error('Unrecognised Unit Rental Breakdown text: use Unit 1: £540 and Unit 2: £595');
  const ids=new Set();
  const units=matches.map(m=>{const n=Number(m[1]);if(ids.has(n))throw Error('Duplicate unit number');ids.add(n);return {id:'unit-'+n,label:'Unit '+n,type:'flat',monthlyRentGBP:Number(m[2].replace(/,/g,''))}});
