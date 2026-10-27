@@ -1,0 +1,20 @@
+name: ACT-882 HMO master draft structural acceptance
+on:
+  pull_request:
+    paths:
+      - 'drafts/HMO-NW-2S98D-btl-master/**'
+      - 'scripts/check-hmo-master-draft.mjs'
+      - '.github/workflows/act-882-hmo-draft-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hmo-draft-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test staged HMO section order and financial inputs
+        run: node scripts/check-hmo-master-draft.mjs
