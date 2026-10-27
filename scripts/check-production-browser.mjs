@@ -452,13 +452,14 @@ for(const row of golden){
  assert.match(await page.locator('body').innerText(),/BTL-NE-2CUEP/);
  assert.match(await page.locator('body').innerText(),/Yorkshire & Humber/);
  assert.equal(await page.locator('#ltv').inputValue(),'75');
+ assert.equal(await page.locator('#rate').inputValue(),'6','PK approved base must be 6%, not historical PDF comparison rate');
  approximately(await amount('#mortgageAmountOut'),112500,'PKD-68 mortgage');
  approximately(await amount('#capitalWithoutOut'),55224,'PKD-68 initial capital');
  approximately(await amount('#capitalOut'),60746.4,'PKD-68 contingency');
  approximately(await amount('#costOut'),5691,'PKD-68 annual costs');
- approximately(await amount('#interestOut'),5625,'PKD-68 annual interest');
- approximately(await amount('#monthlyOut'),557,'PKD-68 monthly profit');
- approximately(await amount('#roiOut'),11.0,'PKD-68 ROI');
+ approximately(await amount('#interestOut'),6750,'PKD-68 annual interest');
+ approximately(await amount('#monthlyOut'),463.25,'PKD-68 monthly profit');
+ approximately(await amount('#roiOut'),9.15,'PKD-68 ROI');
  assert.equal(await page.locator('[data-cost="6"]').inputValue(),'','unknown service charge blank');
  assert.equal(await page.locator('[data-cost="7"]').inputValue(),'','unknown ground rent blank');
  await page.locator('[data-cost="6"]').fill('200');await page.locator('[data-cost="6"]').blur();
