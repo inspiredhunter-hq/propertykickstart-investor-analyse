@@ -70,7 +70,7 @@ for(const k of numeric){
  if(missing(override)||typeof evidence!=='string'||evidence.trim().length<12)throw Error('Missing approved assumption and evidence: '+k+' (Pipeline '+(defs[k]??'no direct field')+')');
  data[k]=number(override,k);
 }
-const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+b,0);
+const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+Number(b||0),0);
 data.STRESSRATE=data.RATE;data.STRESSRATESLIDER=data.RATE;
 data.STRESSRENTMONTHLY=data.RENT_MONTHLY;data.STRESSRENTSLIDER=data.RENT_MONTHLY;
 data.STRESSCOSTSMONTHLY=Number((sum/12).toFixed(2));data.STRESSCOSTSSLIDER=data.STRESSCOSTSMONTHLY;
