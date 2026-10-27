@@ -33,6 +33,7 @@ else if(!missing(annual))data.RENT_MONTHLY=number(annual,'Total Annual Rent (Cal
 else if(!missing(sourceRent))data.RENT_MONTHLY=number(sourceRent,'Annual Rent (PDF)')/12;
 else throw Error('Missing evidenced rent in Pipeline');
 if(!missing(annual)&&Math.abs(Number(annual)-data.RENT_MONTHLY*12)>0.02)throw Error('Conflicting monthly and annual rental values');
+if(!missing(sourceRent)&&Math.abs(number(sourceRent,'Annual Rent (PDF)')-data.RENT_MONTHLY*12)>0.02)throw Error('Conflicting monthly rent and back-office PDF annual rent');
 const unitInput=val('Unit Rental Breakdown');
 if(missing(unitInput))throw Error('Missing Unit Rental Breakdown: cannot publish unit detail page');
 const unitText=String(unitInput).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
@@ -64,12 +65,13 @@ data.PROPERTY_PRINT_SUMMARY=text(approved.values?.PROPERTY_PRINT_SUMMARY??approv
 const numeric=['LTV','RATE','RESERVE','MANAGEMENTRATE','STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','COST_0','COST_1','COST_2','COST_3','COST_11','COST_4','COST_5','COST_6','COST_7','COST_8','COST_9','COST_10'];
 for(const k of numeric){
  const from=defs[k]?val(defs[k]):null;
+ if(['COST_6','COST_7'].includes(k)&&missing(from)&&missing(approved.values?.[k])){data[k]='';continue}
  if(!missing(from)){data[k]=number(from,defs[k]);continue}
  const override=approved.values?.[k], evidence=approved.evidence?.[k];
  if(missing(override)||typeof evidence!=='string'||evidence.trim().length<12)throw Error('Missing approved assumption and evidence: '+k+' (Pipeline '+(defs[k]??'no direct field')+')');
  data[k]=number(override,k);
 }
-const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+b,0);
+const sum=Array.from({length:12},(_,i)=>data['COST_'+i]).reduce((a,b)=>a+Number(b||0),0);
 data.STRESSRATE=data.RATE;data.STRESSRATESLIDER=data.RATE;
 data.STRESSRENTMONTHLY=data.RENT_MONTHLY;data.STRESSRENTSLIDER=data.RENT_MONTHLY;
 data.STRESSCOSTSMONTHLY=Number((sum/12).toFixed(2));data.STRESSCOSTSSLIDER=data.STRESSCOSTSMONTHLY;

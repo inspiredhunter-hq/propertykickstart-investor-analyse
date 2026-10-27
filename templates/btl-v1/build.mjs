@@ -10,13 +10,13 @@ const here=dirname(new URL(import.meta.url).pathname);
 const template=readFileSync(resolve(here,'index.template.html'),'utf8');
 const data=JSON.parse(readFileSync(resolve(configurationPath),'utf8'));
 const tokens=[...new Set([...template.matchAll(/\{\{([A-Z0-9_]+)\}\}/g)].map(x=>x[1]))];
-const missing=tokens.filter(k=>!(k in data)||data[k]===null||data[k]==='');
+const missing=tokens.filter(k=>!(k in data)||data[k]===null||(data[k]===''&&!['COST_6','COST_7'].includes(k)));
 if(missing.length)throw new Error('Required BTL fields missing: '+missing.join(', '));
 for(const k of Object.keys(data))if(!tokens.includes(k))throw new Error('Unknown property field: '+k);
 for(const k of tokens){
  const value=data[k];
  if(k==='PROPERTY_CODE'&&!/^BTL-[A-Z0-9-]+$/.test(String(value)))throw new Error('Invalid BTL property code');
- if((k==='PRICE'||k==='RENT_MONTHLY'||k==='LTV'||k==='RATE'||k==='RESERVE'||k==='MANAGEMENTRATE'||k.startsWith('COST_')||['STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','STRESSRATESLIDER','STRESSRATE','STRESSRENTSLIDER','STRESSRENTMONTHLY','STRESSCOSTSSLIDER','STRESSCOSTSMONTHLY'].includes(k))&&(!Number.isFinite(Number(value))||Number(value)<0))throw new Error('Invalid non-negative numeric value: '+k);
+ if((k==='PRICE'||k==='RENT_MONTHLY'||k==='LTV'||k==='RATE'||k==='RESERVE'||k==='MANAGEMENTRATE'||(k.startsWith('COST_')&&!(data[k]===''&&['COST_6','COST_7'].includes(k)))||['STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','STRESSRATESLIDER','STRESSRATE','STRESSRENTSLIDER','STRESSRENTMONTHLY','STRESSCOSTSSLIDER','STRESSCOSTSMONTHLY'].includes(k))&&(!Number.isFinite(Number(value))||Number(value)<0))throw new Error('Invalid non-negative numeric value: '+k);
  if(typeof value==='string'&&/[<>]/.test(value))throw new Error('Markup is not allowed in property field: '+k);
 }
 assert.equal(Number(data.RENT_MONTHLY),Number(data.STRESSRENTMONTHLY),'Default stress rent must equal annual rental income');

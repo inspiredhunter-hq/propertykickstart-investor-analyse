@@ -339,6 +339,38 @@ for(const row of golden){
  assert.equal(outside.length,0,row.path+': PDF has text outside its A4 page bounds');
  const tiny=extracted.filter(w=>w.y2-w.y1<4.3);
  assert.ok(tiny.length/extracted.length<0.06,row.path+': PDF has too much unusually small print');
+ if(row.type==='btl'){
+   // ACT-895 CR-01: unknown charges are blank, excluded, disclosed and editable.
+   for(const n of ['6','7'])assert.equal(await page.locator('[data-cost="'+n+'"]').inputValue(),'','unknown lease charge remains blank');
+   assert.equal(await page.locator('#unknownLeaseDisclosure').isVisible(),true,'unknown charges disclose model limitation');
+   assert.match(await page.locator('#pCosts').innerText(),/Not confirmed/,'print summary discloses unknown charges');
+   const startingCosts=cash(await page.locator('#costOut').innerText());
+   await page.locator('[data-cost="6"]').fill('120');
+   await page.locator('[data-cost="6"]').blur();
+   assert.ok(Math.abs(cash(await page.locator('#costOut').innerText())-startingCosts-120)<0.02,'entered service charge changes annual costs');
+   await page.locator('[data-cost="6"]').fill('');
+   await page.locator('[data-cost="6"]').blur();
+   assert.equal(await page.locator('[data-cost="6"]').inputValue(),'','removing unverified cost restores blank state');
+   assert.ok(Math.abs(cash(await page.locator('#costOut').innerText())-startingCosts)<0.02,'blank charge excluded from totals');
+   // CR-07: negative and zero-target cases must not produce spurious portfolio counts.
+   await page.locator('input[name="cashflowMode"][value="target"]').check();
+   await page.locator('#target').fill('3000');
+   await page.locator('#rate').fill('20');
+   assert.match(await page.locator('#monthlyOut').innerText(),/−/,'high-rate loss displays a negative net monthly cashflow');
+   assert.match(await page.locator('#roiOut').innerText(),/-/,'high-rate loss displays negative ROI');
+   assert.match(await page.locator('#portfolioCount').innerText(),/Not achievable/,'negative cashflow cannot be scaled to a positive property count');
+   await page.locator('#target').focus();
+   await page.locator('#target').fill('0');
+   assert.equal(await page.locator('#target').inputValue(),'0','zero-target input entered without focus-formatting race');
+   assert.match(await page.locator('#portfolioCount').innerText(),/Set a target/,'zero target gives no divide-by-zero or misleading count');
+   await page.locator('#stressRate').fill('13');
+   await page.locator('#stressRentMonthly').fill('900');
+   await page.locator('#stressCostsMonthly').fill('600');
+   await page.locator('#stressReset').click();
+   assert.equal(Number(await page.locator('#stressRate').inputValue()),20,'stress reset restores current main mortgage rate');
+   assert.equal(Number(await page.locator('#stressRentMonthly').inputValue()),1135,'stress reset restores main rent');
+   assert.ok(Math.abs(Number(await page.locator('#stressCostsMonthly').inputValue())-cash(await page.locator('#costOut').innerText())/12)<0.02,'stress reset restores operating-cost baseline');
+ }
  assert.deepEqual(pageErrors,[],row.path+' runtime errors');
  console.log('PASS '+row.path+' Deal Register, mobile, controls, no overflow, two-page PDF');
  await page.close();
