@@ -360,7 +360,8 @@ for(const row of golden){
    assert.match(await page.locator('#roiOut').innerText(),/-/,'high-rate loss displays negative ROI');
    assert.match(await page.locator('#portfolioCount').innerText(),/Not achievable/,'negative cashflow cannot be scaled to a positive property count');
    await page.locator('#target').fill('0');
-   assert.match(await page.locator('#portfolioCount').innerText(),/Set a target/,'zero target gives no divide-by-zero or misleading count');
+   await page.waitForFunction(()=>document.querySelector('#portfolioCount')?.textContent?.includes('Set a target'),{timeout:3000}).catch(()=>{});
+   assert.match(await page.locator('#portfolioCount').innerText(),/Set a target/,'zero target gives no divide-by-zero or misleading count; current target='+await page.locator('#target').inputValue());
    await page.locator('#stressRate').fill('13');
    await page.locator('#stressRentMonthly').fill('900');
    await page.locator('#stressCostsMonthly').fill('600');
