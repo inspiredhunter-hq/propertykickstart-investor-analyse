@@ -304,6 +304,7 @@ for(const row of golden){
    assert.match(unitText.stdout,/Unit-by-unit rental breakdown/);
    assert.match(unitText.stdout,/540\.00/);
    assert.match(unitText.stdout,/595\.00/);
+   assert.doesNotMatch(unitText.stdout,/has not been confirmed and is excluded/i,'the help tooltip must not leak into the three-page PDF');
    await page.locator('#includeUnitPage').uncheck();
    // A print action must flag missing SCORE inputs and keep all existing figures intact.
    await page.evaluate(()=>{document.querySelectorAll('input[name="cashflowMode"],input[name="riskChoice"]').forEach(el=>{el.checked=false});window.__printCalls=0;window.print=()=>{window.__printCalls++}});
@@ -329,6 +330,11 @@ for(const row of golden){
  assert.equal(text.status,0,'pdftotext must succeed');
  assert.match(text.stdout,/Other (acquisition|buying) costs/i,'edited cost must be in PDF');
  assert.match(text.stdout,/975/,'edited amount must be in PDF');
+ if(row.type==='btl'){
+   assert.match(text.stdout,/Leasehold service charge\s+Not confirmed/,'two-page PDF must retain unconfirmed service charge');
+   assert.match(text.stdout,/Ground rent\s+Not confirmed/,'two-page PDF must retain unconfirmed ground rent');
+   assert.doesNotMatch(text.stdout,/has not been confirmed and is excluded/i,'popover help must not leak into the two-page PDF');
+ }
  // Print geometry audit: detectable text must fit the A4 page, without tiny or clipped glyph boxes.
  const bbox=spawnSync('pdftotext',['-bbox','-','-'],{input:pdf,encoding:'utf8'});
  assert.equal(bbox.status,0,row.path+': PDF geometry extraction should succeed');
