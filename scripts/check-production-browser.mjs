@@ -444,7 +444,7 @@ for(const row of golden){
 {
  const page=await browser.newPage({viewport:{width:390,height:844}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto(pathToFileURL(resolve('drafts/PKD-68/index.html')).href,{waitUntil:'load'});
+ await page.goto(pathToFileURL(resolve('BTL-NE-2CUEP/index.html')).href,{waitUntil:'load'});
  assert.equal(await page.locator('#ackGate').isVisible(),true,'PKD-68 disclosure gate');
  await page.locator('#ackBox').check();await page.locator('#revealBtn').click();
  const amount=async id=>cash(await page.locator(id).innerText());
