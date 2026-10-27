@@ -388,4 +388,44 @@ for(const row of golden){
  console.log('PASS '+row.path+' Deal Register, mobile, controls, no overflow, two-page PDF');
  await page.close();
 }
+
+// ACT-895 PKD-76 property-specific cash-only release acceptance.
+{
+ const page=await browser.newPage({viewport:{width:390,height:844}});
+ const errs=[]; page.on('pageerror',e=>errs.push(e.message));
+ await page.goto(pathToFileURL(resolve('BTL-WM-UAXC7/index.html')).href,{waitUntil:'load'});
+ assert.equal(await page.locator('#ackGate').isVisible(),true,'PKD-76 disclosure gate');
+ await page.locator('#ackBox').check();
+ await page.locator('#revealBtn').click();
+ assert.match(await page.locator('body').innerText(),/BTL-WM-UAXC7/,'correct code');
+ assert.equal(await page.locator('#ltv').inputValue(),'0','cash deal has zero LTV');
+ assert.equal(await page.locator('#rate').inputValue(),'0','cash deal has no borrowing rate');
+ const approx=async(id,expected,msg)=>assert.ok(Math.abs(cash(await page.locator(id).innerText())-expected)<0.03,msg);
+ await approx('#mortgageAmountOut',0,'no loan');
+ await approx('#interestOut',0,'no mortgage interest');
+ await approx('#capitalWithoutOut',80100,'cash capital including price');
+ await approx('#capitalOut',88110,'contingency applies to cash acquisition');
+ await approx('#costOut',4530,'running costs include source-evidenced lease charges');
+ await approx('#monthlyOut',372.5,'net monthly cashflow');
+ await approx('#roiOut',5.07,'ROI after contingency');
+ assert.equal(await page.locator('[data-cost="6"]').inputValue(),'759.00','evidenced service charge');
+ assert.equal(await page.locator('[data-cost="7"]').inputValue(),'330.00','evidenced ground rent');
+ await page.locator('#ltv').fill('50');
+ await approx('#mortgageAmountOut',35000,'editable borrowing scenario works');
+ await page.locator('#ltv').fill('0');
+ await approx('#mortgageAmountOut',0,'cash-only baseline can be restored');
+ await page.locator('[data-cost="6"]').fill('879');await page.locator('[data-cost="6"]').blur();
+ await approx('#costOut',4650,'editable service charge recalculates');
+ await page.locator('[data-cost="6"]').fill('759');await page.locator('[data-cost="6"]').blur();
+ await approx('#costOut',4530,'service cost restored');
+ assert.equal(await page.locator('img').count(),0,'no published property image');
+ assert.equal((await page.locator('body').innerText()).includes('Victoria Court'),false,'internal street not visible');
+ assert.deepEqual(errs,[],'no cash-route browser errors');
+ await page.emulateMedia({media:'print'});
+ const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+ const pages=(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length;
+ assert.equal(pages,2,'two-page cash assessment');
+ console.log('PASS BTL-WM-UAXC7 cash-only gate, financials, editability, privacy, mobile and 2-page PDF');
+ await page.close();
+}
 }finally{await browser.close()}

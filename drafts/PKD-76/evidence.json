@@ -1,0 +1,37 @@
+{
+  "pkid": "PKD-76",
+  "propertyCode": "BTL-WM-UAXC7",
+  "status": "NON-PUBLIC TEST CANDIDATE — NOT FOR RELEASE",
+  "sourcePipeline": "https://app.notion.com/p/3b82aad7d30e81558060ef3dec64cd71",
+  "dealAnalysis": "PK Deal Analysis & Investor Comparison / BTL Analysis row 4",
+  "cashOnly": true,
+  "loan": 0,
+  "mortgageInterest": 0,
+  "purchase": 70000,
+  "acquisitionBeforeContingency": 80100,
+  "contingencyRatePercent": 10,
+  "acquisitionWithContingency": 88110,
+  "monthlyRent": 750,
+  "annualOperatingCosts": 4530,
+  "annualProfit": 4470,
+  "monthlyProfit": 372.5,
+  "cashROIWithContingencyPercent": 5.07,
+  "modelledCosts": [
+    "maintenance 10%",
+    "void 5%",
+    "insurance £285",
+    "heating/plumbing £366",
+    "compliance £240",
+    "accounting £300"
+  ],
+  "sourceCosts": [
+    "service charge £759",
+    "ground rent £330"
+  ],
+  "unconfirmed": [
+    "Council tax during voids omitted from screening totals",
+    "Insurance/maintenance values are planning assumptions not source confirmed",
+    "EPC not found"
+  ],
+  "publicReleaseApproved": false
+}
