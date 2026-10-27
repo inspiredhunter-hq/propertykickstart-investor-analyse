@@ -425,7 +425,9 @@ for(const row of golden){
  const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
  const pages=(pdf.toString('latin1').match(/\/Type\s*\/Page\b/g)||[]).length;
  assert.equal(pages,2,'two-page cash assessment');
+ await page.emulateMedia({media:'screen'});
  await page.locator('#includeUnitPage').check();
+ await page.emulateMedia({media:'print'});
  const unitPdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
  const unitInfo=spawnSync('pdfinfo',['-'],{input:unitPdf,encoding:'utf8'});
  assert.equal(Number(unitInfo.stdout.match(/^Pages:\s*(\d+)/m)?.[1]),3,'cash deal opt-in three-page PDF');
@@ -433,6 +435,7 @@ for(const row of golden){
  assert.match(unitText,/Unit-by-unit rental breakdown/,'one-unit breakdown is printed');
  assert.match(unitText,/West Bromwich\s*·\s*BTL-WM-UAXC7/,'unit page must identify correct property');
  assert.doesNotMatch(unitText,/South Shields|BTL-NE-WLETS/,'unit page must not inherit South Shields identity');
+ await page.emulateMedia({media:'screen'});
  await page.locator('#includeUnitPage').uncheck();
  console.log('PASS BTL-WM-UAXC7 cash-only gate, financials, editability, privacy, mobile and 2-page PDF');
  await page.close();
