@@ -440,4 +440,48 @@ for(const row of golden){
  console.log('PASS BTL-WM-UAXC7 cash-only gate, financials, editability, privacy, mobile and 2-page PDF');
  await page.close();
 }
+
+{
+ const page=await browser.newPage({viewport:{width:390,height:844}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(pathToFileURL(resolve('BTL-NE-2CUEP/index.html')).href,{waitUntil:'load'});
+ assert.equal(await page.locator('#ackGate').isVisible(),true,'PKD-68 disclosure gate');
+ await page.locator('#ackBox').check();await page.locator('#revealBtn').click();
+ const amount=async id=>cash(await page.locator(id).innerText());
+ const approximately=(value,target,message)=>assert.ok(Math.abs(value-target)<0.03,message+': '+value);
+ assert.match(await page.locator('body').innerText(),/BTL-NE-2CUEP/);
+ assert.match(await page.locator('body').innerText(),/Yorkshire & Humber/);
+ assert.equal(await page.locator('#ltv').inputValue(),'75');
+ approximately(await amount('#mortgageAmountOut'),112500,'PKD-68 mortgage');
+ approximately(await amount('#capitalWithoutOut'),55224,'PKD-68 initial capital');
+ approximately(await amount('#capitalOut'),60746.4,'PKD-68 contingency');
+ approximately(await amount('#costOut'),5691,'PKD-68 annual costs');
+ approximately(await amount('#interestOut'),5625,'PKD-68 annual interest');
+ approximately(await amount('#monthlyOut'),557,'PKD-68 monthly profit');
+ approximately(await amount('#roiOut'),11.0,'PKD-68 ROI');
+ assert.equal(await page.locator('[data-cost="6"]').inputValue(),'','unknown service charge blank');
+ assert.equal(await page.locator('[data-cost="7"]').inputValue(),'','unknown ground rent blank');
+ await page.locator('[data-cost="6"]').fill('200');await page.locator('[data-cost="6"]').blur();
+ approximately(await amount('#costOut'),5891,'service charge edit recalculates');
+ await page.locator('[data-cost="6"]').fill('');await page.locator('[data-cost="6"]').blur();
+ approximately(await amount('#costOut'),5691,'service charge reset');
+ assert.equal((await page.locator('body').innerText()).includes('Brooklyn Street'),false,'no private address');
+ assert.equal(await page.locator('img').count(),0,'no property images');
+ await page.emulateMedia({media:'print'});
+ const normal=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+ const info=spawnSync('pdfinfo',['-'],{input:normal,encoding:'utf8'});
+ assert.equal(Number(info.stdout.match(/^Pages:\s*(\d+)/m)?.[1]),2,'standard PDF must have two pages');
+ await page.emulateMedia({media:'screen'});
+ await page.locator('#includeUnitPage').check();
+ await page.emulateMedia({media:'print'});
+ const extended=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+ const extendedInfo=spawnSync('pdfinfo',['-'],{input:extended,encoding:'utf8'});
+ assert.equal(Number(extendedInfo.stdout.match(/^Pages:\s*(\d+)/m)?.[1]),3,'optional PDF must have three pages');
+ const printed=spawnSync('pdftotext',['-','-'],{input:extended,encoding:'utf8'}).stdout;
+ assert.match(printed,/Hull\s*·\s*BTL-NE-2CUEP/,'property-specific optional PDF header');
+ assert.doesNotMatch(printed,/South Shields|BTL-NE-WLETS/,'no inherited South Shields identity');
+ assert.deepEqual(errors,[],'PKD-68 no runtime errors');
+ await page.close();
+ console.log('PASS PKD-68 mortgage BTL non-public candidate financial, mobile, privacy and PDF');
+}
 }finally{await browser.close()}
