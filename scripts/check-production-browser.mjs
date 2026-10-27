@@ -342,7 +342,14 @@ for(const row of golden){
  if(row.type==='btl'){
    // ACT-895 CR-01: unknown charges are blank, excluded, disclosed and editable.
    for(const n of ['6','7'])assert.equal(await page.locator('[data-cost="'+n+'"]').inputValue(),'','unknown lease charge remains blank');
-   assert.equal(await page.locator('#unknownLeaseDisclosure').isVisible(),true,'unknown charges disclose model limitation');
+   assert.equal(await page.locator('#unknownLeaseDisclosure').count(),0,'no standalone unknown-charge warning');
+   for(const [label,fragment] of [['Leasehold service charge information','service charge has not been confirmed'],['Ground rent information','Ground rent has not been confirmed']]){
+     const icon=page.locator('details.info-tip').filter({has:page.locator('summary[aria-label="'+label+'"]')});
+     assert.equal(await icon.count(),1,'separate help icon for '+label);
+     await icon.locator('summary').click();
+     assert.match(await icon.innerText(),new RegExp(fragment),'help explains exclusions for '+label);
+     await icon.locator('summary').click();
+   }
    assert.match(await page.locator('#pCosts').innerText(),/Not confirmed/,'print summary discloses unknown charges');
    const startingCosts=cash(await page.locator('#costOut').innerText());
    await page.locator('[data-cost="6"]').fill('120');
