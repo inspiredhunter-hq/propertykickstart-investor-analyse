@@ -64,6 +64,16 @@ data.PROPERTY_SUMMARY=text(approved.values?.PROPERTY_SUMMARY??approved.values?.P
 data.PROPERTY_PRINT_SUMMARY=text(approved.values?.PROPERTY_PRINT_SUMMARY??approved.values?.PROPERTY_SUMMARY??approved.values?.PROPERTY_DESCRIPTION,'PROPERTY_PRINT_SUMMARY (public clearance required)');
 const numeric=['LTV','RATE','RESERVE','MANAGEMENTRATE','STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','COST_0','COST_1','COST_2','COST_3','COST_11','COST_4','COST_5','COST_6','COST_7','COST_8','COST_9','COST_10'];
 for(const k of numeric){
+ if(k==='RATE'){
+  // The Pipeline's 5% field is the historic PDF comparison, not the public PK base.
+  // 6% is the governed PK BTL base; zero borrowing carries zero financing rate.
+  const exception=approved.values?.RATE, evidence=approved.evidence?.RATE;
+  if(!missing(exception)){
+   if(typeof evidence!=='string'||evidence.trim().length<12)throw Error('Custom public interest rate requires property-specific approved evidence');
+   data.RATE=number(exception,'Approved public interest rate');
+  }else data.RATE=data.LTV===0?0:6;
+  continue;
+ }
  const from=defs[k]?val(defs[k]):null;
  if(['COST_6','COST_7'].includes(k)&&missing(from)&&missing(approved.values?.[k])){data[k]='';continue}
  if(!missing(from)){data[k]=number(from,defs[k]);continue}
