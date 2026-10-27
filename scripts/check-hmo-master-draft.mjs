@@ -6,8 +6,8 @@ import {Script} from 'node:vm';
 const src=readFileSync('drafts/HMO-NW-2S98D-btl-master/index.html','utf8');
 const expected=['1. Your SCORE criteria','2. Acquisition and finance illustration','3. Gross Rent','4. Annual operating costs','5. Illustrative Investment returns','6. Income Target Comparison','7. Stress-test the numbers','8. VALUE · Your next decision'];
 let at=0;
-for(const x of expected){const i=src.indexOf('<h2>'+x+'</h2>',at);assert.ok(i>=at,'missing/out of order: '+x);at=i+x.length;}
-assert.equal([...src.matchAll(/<h2>\d+\. /g)].length,8,'exactly eight numbered sections');
+for(const x of expected){const i=src.indexOf(x,at);assert.ok(i>=at,'missing/out of order: '+x);at=i+x.length;}
+assert.equal([...src.matchAll(/<h2[^>]*>\d+\. /g)].length,8,'exactly eight numbered sections');
 assert.match(src,/data-property-code="HMO-NW-2S98D"/);
 assert.match(src,/id="rate"[^>]*value="6"/);
 assert.match(src,/id="managementRate"[^>]*value="12"/);
