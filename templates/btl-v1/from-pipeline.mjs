@@ -33,6 +33,7 @@ else if(!missing(annual))data.RENT_MONTHLY=number(annual,'Total Annual Rent (Cal
 else if(!missing(sourceRent))data.RENT_MONTHLY=number(sourceRent,'Annual Rent (PDF)')/12;
 else throw Error('Missing evidenced rent in Pipeline');
 if(!missing(annual)&&Math.abs(Number(annual)-data.RENT_MONTHLY*12)>0.02)throw Error('Conflicting monthly and annual rental values');
+if(!missing(sourceRent)&&Math.abs(number(sourceRent,'Annual Rent (PDF)')-data.RENT_MONTHLY*12)>0.02)throw Error('Conflicting monthly rent and back-office PDF annual rent');
 const unitInput=val('Unit Rental Breakdown');
 if(missing(unitInput))throw Error('Missing Unit Rental Breakdown: cannot publish unit detail page');
 const unitText=String(unitInput).replace(/<[^>]*>/g,'').replace(/&nbsp;/g,' ').trim();
