@@ -64,6 +64,7 @@ data.PROPERTY_PRINT_SUMMARY=text(approved.values?.PROPERTY_PRINT_SUMMARY??approv
 const numeric=['LTV','RATE','RESERVE','MANAGEMENTRATE','STAMP','LEGAL','BROKER','ARRANGEMENT','SURVEY','COST_0','COST_1','COST_2','COST_3','COST_11','COST_4','COST_5','COST_6','COST_7','COST_8','COST_9','COST_10'];
 for(const k of numeric){
  const from=defs[k]?val(defs[k]):null;
+ if(['COST_6','COST_7'].includes(k)&&missing(from)&&missing(approved.values?.[k])){data[k]='';continue}
  if(!missing(from)){data[k]=number(from,defs[k]);continue}
  const override=approved.values?.[k], evidence=approved.evidence?.[k];
  if(missing(override)||typeof evidence!=='string'||evidence.trim().length<12)throw Error('Missing approved assumption and evidence: '+k+' (Pipeline '+(defs[k]??'no direct field')+')');
