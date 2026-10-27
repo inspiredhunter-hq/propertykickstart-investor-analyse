@@ -16,6 +16,17 @@ try{
  let r=run(pipeline,assumptions);assert.equal(r.status,0,r.stderr);
  const output=JSON.parse(readFileSync(join(dir,'result.json')));
  const expected={...reference,UNIT_RENTAL_BREAKDOWN_JSON:JSON.stringify({schemaVersion:1,unitCount:2,units:[{id:'unit-1',label:'Unit 1',type:'flat',monthlyRentGBP:540},{id:'unit-2',label:'Unit 2',type:'flat',monthlyRentGBP:595}]})};assert.deepEqual(output,expected,'Plain-text Pipeline entry must generate reconciled unit config');
+ const pdfFive={...pipeline,'Interest Rate % Assumption':0.05};
+ r=run(pdfFive,assumptions);assert.equal(r.status,0,r.stderr);
+ assert.equal(JSON.parse(readFileSync(join(dir,'result.json'))).RATE,6,'Pipeline 5% historical PDF comparison must not replace PK 6% base');
+ const cash={...pdfFive};cash['Deposit % Assumption']=1;const cashAssumptions={...assumptions,values:{...assumptions.values,LTV:0}};
+ r=run(cash,cashAssumptions);assert.equal(r.status,0,r.stderr);
+ assert.equal(JSON.parse(readFileSync(join(dir,'result.json'))).RATE,0,'cash-only has zero financing rate');
+ const evidenced={...assumptions,values:{...assumptions.values,RATE:7},evidence:{...assumptions.evidence,RATE:'Owner-approved property specific exception'}};
+ r=run(pdfFive,evidenced);assert.equal(r.status,0,r.stderr);
+ assert.equal(JSON.parse(readFileSync(join(dir,'result.json'))).RATE,7,'evidenced property-specific exception respected');
+ const invalidException={...assumptions,values:{...assumptions.values,RATE:5}};
+ r=run(pdfFive,invalidException);assert.notEqual(r.status,0,'unapproved default 5% override must fail closed');
  const badAnnual={...pipeline,'Annual Rent (PDF)':14000};r=run(badAnnual,assumptions);assert.notEqual(r.status,0,'Conflicting PDF annual rent must fail pre-build readiness');assert.match(r.stderr,/Conflicting monthly rent and back-office PDF annual rent/);
  const invalid={...pipeline,'Unit Rental Breakdown':'Two units: Unit 1: £540 and Unit 2: £600'};r=run(invalid,assumptions);assert.notEqual(r.status,0,'Rent mismatch must fail closed');
  const malformed={...pipeline,'Unit Rental Breakdown':'Unit one five forty'};r=run(malformed,assumptions);assert.notEqual(r.status,0,'Unrecognised text must fail closed');
