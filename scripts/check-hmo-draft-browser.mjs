@@ -17,11 +17,11 @@ const baseline=await page.evaluate(()=>({cap:compute().capital,profit:compute().
 assert.equal(baseline.rent,34416);
 assert.equal(baseline.costs,21237.72);
 assert.equal(baseline.rate,6);
-assert.equal(await page.locator('[data-field-id="op.hmo.cleaner"]').inputValue(),'1440','seller cleaner estimate must override scaled PK default');
-assert.equal(await page.locator('[data-field-id="op.hmo.communal_supplies"]').inputValue(),'420','seven-room communal supplies PK default');
-assert.equal(await page.locator('[data-field-id="op.hmo.laundry_supplies"]').inputValue(),'252','seven-room laundry PK default');
-assert.equal(await page.locator('[data-field-id="op.hmo.pest_control"]').inputValue(),'180','PK annual pest provision');
-assert.equal(await page.locator('[data-field-id="op.boiler_cover"]').inputValue(),'366','boiler allowance appears once');
+assert.equal(Number((await page.locator('[data-field-id="op.hmo.cleaner"]').inputValue()).replace(/,/g,'')),1440,'seller cleaner estimate must override scaled PK default');
+assert.equal(Number((await page.locator('[data-field-id="op.hmo.communal_supplies"]').inputValue()).replace(/,/g,'')),420,'seven-room communal supplies PK default');
+assert.equal(Number((await page.locator('[data-field-id="op.hmo.laundry_supplies"]').inputValue()).replace(/,/g,'')),252,'seven-room laundry PK default');
+assert.equal(Number((await page.locator('[data-field-id="op.hmo.pest_control"]').inputValue()).replace(/,/g,'')),180,'PK annual pest provision');
+assert.equal(Number((await page.locator('[data-field-id="op.boiler_cover"]').inputValue()).replace(/,/g,'')),366,'boiler allowance appears once');
 assert.ok(Math.abs(baseline.profit-(34416-21237.72-9900))<0.02,'HMO net annual cashflow');
 // Semantic-ID tests: moving display rows must not affect results.
 const identities=await page.locator('.cost-input').evaluateAll(els=>els.map(e=>e.dataset.fieldId));
