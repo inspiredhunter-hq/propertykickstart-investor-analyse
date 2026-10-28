@@ -8,7 +8,7 @@ try{
 let page=await browser.newPage({viewport:{width:390,height:844}});
 const errors=[];page.on('pageerror',error=>errors.push(error.message));
 let loaded=false;
-for(let i=0;i<25;i++){try{await page.goto('http://127.0.0.1:8765/Test/HMO/2S98D/',{waitUntil:'load'});loaded=true;break}catch{await new Promise(r=>setTimeout(r,200))}}
+for(let i=0;i<25;i++){try{await page.goto('http://127.0.0.1:8765/'+(process.env.HMO_TEST_ROUTE||'Test/HMO/2S98D/'),{waitUntil:'load'});loaded=true;break}catch{await new Promise(r=>setTimeout(r,200))}}
 assert.ok(loaded,'browser did not load');
 assert.deepEqual(errors,[],'page JavaScript must not throw');
 await page.locator('#ackBox').check();
