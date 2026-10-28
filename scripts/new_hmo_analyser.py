@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Generate a property-specific HMO draft from the approved St Helens master.
-Never deploy automatically. All property figures must be supplied and QA verified.
+"""Generate a LEGACY property-specific HMO draft from a frozen pre-release template.
+Never deploy automatically. Legacy drafts require migration to current approved HMO model before release.
 Usage: python3 scripts/new_hmo_analyser.py property.json
 """
 import json, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MASTER = ROOT / "HMO-NW-2S98D" / "index.html"
+MASTER = ROOT / "templates" / "legacy-hmo-generator.html"
 FIELDS = ["price","rent","ltv","rate","stamp","legal","broker","arrangement","survey",
           "managementRate","cost-0","cost-1","cost-2","cost-3","cost-4","cost-5","cost-6","cost-7","cost-8"]
 REQUIRED = ["property_code","town","region","room_description","headline","financials"]
@@ -58,7 +58,7 @@ def main():
         raise SystemExit("Unreplaced master identity detected")
     dest.parent.mkdir(parents=True,exist_ok=False)
     dest.write_text(s,encoding="utf-8")
-    print("DRAFT ONLY:",dest)
+    print("LEGACY DRAFT ONLY — update to current approved HMO template before release:",dest)
     print("Mandatory before release: verify canonical Pipeline/Deal Register figures, asking price,")
     print("PK fee, SDLT, contingency, every operating cost, 12% HMO management policy,")
     print("independent model assertions, responsive/browser/accessibility, exactly two PDF pages,")
