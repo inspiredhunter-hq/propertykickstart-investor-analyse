@@ -49,9 +49,9 @@ for(const row of golden){
   await asking.fill('310000');
   assert.equal(Number(await page.locator('#standardStampInput').inputValue()),5100,'manual override retained');
   assert.equal(Number(await page.locator('#stampInput').inputValue()),21000);
-  await page.locator('input[name="haSdltMethod"][value="higher"]').check();
   await asking.fill(String(original));
   await page.locator('#standardStampInput').fill(String(std));
+  await page.locator('input[name="haSdltMethod"][value="higher"]').check();
   console.log('PASS HA SDLT selection and asking-price recalculation '+row.path);
  }
  // ACT-882 Section 3 specific regression checks on all strategy pages.
