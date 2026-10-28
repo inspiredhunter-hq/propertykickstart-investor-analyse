@@ -52,12 +52,15 @@ const rows=await page.locator('#unitPrintRows tbody tr').count();
 assert.equal(rows,7);
 assert.equal(await page.locator('#pAcquisition').locator('.row').count()>=12,true,'PDF acquisition breakdown rows');
 assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4,'each unspecified one-off cost clearly unconfirmed in printable PDF');
+const mobileWidth=await page.evaluate(()=>({viewport:document.documentElement.clientWidth,content:document.documentElement.scrollWidth}));
+assert.ok(mobileWidth.content<=mobileWidth.viewport+1,'mobile screen must have no horizontal overflow: '+JSON.stringify(mobileWidth));
+await page.screenshot({path:'/tmp/hmo-mobile-screen.png',fullPage:true});
 await page.emulateMedia({media:'print'});
 const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
 writeFileSync('/tmp/hmo-acceptance.pdf',pdf);
 const info=execFileSync('pdfinfo',['/tmp/hmo-acceptance.pdf'],{encoding:'utf8'});
 const count=Number(info.match(/^Pages:\s*(\d+)/m)?.[1]);
 assert.ok(count>=3&&count<=4,'Optional room breakdown PDF must be 3 pages (or up to 4 pending layout): actual '+count);
-await page.screenshot({path:'/tmp/hmo-mobile.png',fullPage:true});
+await page.screenshot({path:'/tmp/hmo-print-media.png',fullPage:true});
 console.log(JSON.stringify({status:'PASS',baseline,changed,pdfPages:count,roomRows:rows}));
 }finally{await browser.close();server.kill('SIGTERM')}
