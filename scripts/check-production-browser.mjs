@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ACT-882 production-source release acceptance. Tests current main-compatible pages,
-// not drafts. Browser checks are separate from live custom-domain acceptance.
+// not drafts. HMO-NW-2S98D is independently covered by the stricter HMO browser/PDF acceptance suite run on both routes in hmo-test-preview.yml. Browser checks are separate from live custom-domain acceptance.
 import { chromium } from 'playwright';
 import { spawnSync } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
@@ -12,8 +12,7 @@ const golden=[
   {path:'index.html',type:'ha',capital:206199,profit:26979,roi:13.08},
   {path:'HA-SE-3FTDU/index.html',type:'ha',capital:206199,profit:26979,roi:13.08},
   {path:'HA-NW-9JSFK/index.html',type:'ha',capital:106359,profit:13707,roi:12.89},
-  {path:'BTL-NE-WLETS/index.html',type:'btl',capital:55713.9,profit:2848,roi:5.11,rate:10},
-  {path:'HMO-NW-2S98D/index.html',type:'hmo',capital:80379,profit:2718.28,roi:3.38,rate:12}
+  {path:'BTL-NE-WLETS/index.html',type:'btl',capital:55713.9,profit:2848,roi:5.11,rate:10}
 ];
 const cash=s=>Number(String(s).replace(/[^0-9.-]/g,''));
 const browser=await chromium.launch({headless:true,...(process.env.PK_CHROMIUM_PATH?{executablePath:process.env.PK_CHROMIUM_PATH}: {})});
