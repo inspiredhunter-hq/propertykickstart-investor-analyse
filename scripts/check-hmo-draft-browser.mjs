@@ -54,7 +54,7 @@ assert.equal(await page.locator('#pAcquisition').locator('.row').count()>=12,tru
 assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4,'each unspecified one-off cost clearly unconfirmed in printable PDF');
 const mobileWidth=await page.evaluate(()=>({viewport:document.documentElement.clientWidth,content:document.documentElement.scrollWidth}));
 assert.ok(mobileWidth.content<=mobileWidth.viewport+1,'mobile screen must have no horizontal overflow: '+JSON.stringify(mobileWidth));
-await page.screenshot({path:'/tmp/hmo-mobile-screen.png',fullPage:true});
+await page.screenshot({path:'/tmp/hmo-mobile.png',fullPage:true});
 await page.emulateMedia({media:'print'});
 const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
 writeFileSync('/tmp/hmo-acceptance.pdf',pdf);
