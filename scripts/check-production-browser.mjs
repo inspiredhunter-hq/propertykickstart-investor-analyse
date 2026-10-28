@@ -32,6 +32,28 @@ for(const row of golden){
  assert.equal(await page.locator(reveal).isEnabled(),true);
  await page.locator(reveal).click();
  assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
+ if(row.type==='ha' && row.path!=='index.html'){
+  const asking=page.locator('#priceInput');
+  const original=Number(await asking.inputValue());
+  const high=original===550000?45000:19000;
+  const std=original===550000?17500:4500;
+  assert.equal(Number(await page.locator('#stampInput').inputValue()),high);
+  assert.equal(Number(await page.locator('#standardStampInput').inputValue()),std);
+  const capitalBefore=cash(await page.locator('#capitalSummary').textContent());
+  await page.locator('input[name="haSdltMethod"][value="standard"]').check();
+  assert.ok(Math.abs(cash(await page.locator('#capitalSummary').textContent())-capitalBefore+high-std)<0.02,'standard SDLT counted once');
+  await asking.fill('300000');
+  assert.equal(Number(await page.locator('#stampInput').inputValue()),20000);
+  assert.equal(Number(await page.locator('#standardStampInput').inputValue()),5000);
+  await page.locator('#standardStampInput').fill('5100');
+  await asking.fill('310000');
+  assert.equal(Number(await page.locator('#standardStampInput').inputValue()),5100,'manual override retained');
+  assert.equal(Number(await page.locator('#stampInput').inputValue()),21000);
+  await page.locator('input[name="haSdltMethod"][value="higher"]').check();
+  await asking.fill(String(original));
+  await page.locator('#standardStampInput').fill(String(std));
+  console.log('PASS HA SDLT selection and asking-price recalculation '+row.path);
+ }
  // ACT-882 Section 3 specific regression checks on all strategy pages.
  const heading=page.locator('h2').filter({hasText:row.type==='btl'?/^4\. Annual operating costs$/:/^3\. Annual operating costs$/});
  assert.equal(await heading.count(),1,row.path+': correct strategy-specific operating cost heading');
