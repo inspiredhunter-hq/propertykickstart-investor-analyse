@@ -22,7 +22,7 @@ assert.ok(Math.abs(baseline.profit-(34416-21797.72-9900))<0.02,'HMO net annual c
 const identities=await page.locator('.cost-input').evaluateAll(els=>els.map(e=>e.dataset.fieldId));
 assert.equal(new Set(identities).size,9,'operating-cost IDs must be unique');
 assert.ok(identities.includes('op.council_tax')&&identities.includes('op.utilities'));
-await page.evaluate(()=>{const input=document.querySelector('[data-field-id="op.council_tax"]');const row=input.closest('label');row.parentElement.insertBefore(row,row.parentElement.querySelector('label.cost'));});
+await page.evaluate(()=>{const input=document.querySelector('[data-field-id="op.council_tax"]');const row=input.closest('label');row.dataset.testCouncilTax='true';row.parentElement.insertBefore(row,row.parentElement.querySelector('label.cost'));});
 const reordered=await page.evaluate(()=>compute());
 assert.equal(reordered.costs,baseline.costs,'reordering must not alter annual operating costs');
 assert.equal(reordered.profit,baseline.profit,'reordering must not alter cashflow');
@@ -34,7 +34,7 @@ await tax.fill('2406.24');await tax.dispatchEvent('input');
 assert.ok(Math.abs((await page.evaluate(()=>compute().costs))-baseline.costs)<0.02);
 await page.evaluate(()=>{document.querySelector('[data-field-id="op.council_tax"]').dataset.fieldId='op.utilities'});
 assert.equal(await page.evaluate(()=>{try{compute();return 'BAD'}catch(e){return e.message}}),'Unknown or duplicate operating-cost field: op.utilities','duplicate IDs must fail closed');
-await page.evaluate(()=>{[...document.querySelectorAll('.cost-input')].filter(x=>x.dataset.fieldId==='op.utilities').at(-1).dataset.fieldId='op.council_tax'});
+await page.evaluate(()=>{document.querySelector('[data-test-council-tax="true"] .cost-input').dataset.fieldId='op.council_tax'});
 const val=page.locator('#refurbishment');
 await val.fill('10000');await val.dispatchEvent('input');
 const changed=await page.evaluate(()=>({cap:compute().capital,profit:compute().profit,roi:compute().roi}));
