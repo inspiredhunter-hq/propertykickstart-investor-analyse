@@ -22,6 +22,11 @@ const inputs=[...src.matchAll(/<input[^>]+class="amount cost-input"[^>]*>/g)].ma
 assert.equal(inputs.length,9,'all nine currently reconciled St Helens cost categories');
 const costs=inputs.map(s=>Number(s.match(/value="([^"]+)"/)[1]));
 assert.ok(Math.abs(costs.reduce((a,b)=>a+b,0)-21797.72)<0.001);
+const canonical=[['refurbishment','acq.refurbishment'],['furniture','acq.furniture'],['fireSafetyWorks','acq.fire_safety_works'],['conversion','acq.conversion']];
+for(const [id,token] of canonical)assert.match(src,new RegExp('id="'+id+'" data-field-id="'+token+'"'),'canonical acquisition identity required');
+const opIDs=['op.management','op.maintenance','op.voids','op.buildings_insurance','op.boiler_cover','op.hmo_licence','op.utilities','op.council_tax','op.other_hmo'];
+for(const token of opIDs)assert.match(src,new RegExp('data-field-id="'+token+'"'));
+assert.doesNotMatch(src,/data-cost="\\d+"/,'HMO expense data-cost numerical positions must not return');
 for(const id of ['refurbishment','furniture','fireSafetyWorks','conversion']){
  assert.match(src,new RegExp('id="'+id+'"'));
  assert.match(src,new RegExp("num\\('"+id+"'\\)"),'acquisition cost participates in capital');
