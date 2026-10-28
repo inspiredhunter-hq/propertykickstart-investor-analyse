@@ -4,6 +4,7 @@ on:
     paths:
       - 'drafts/HMO-NW-2S98D-btl-master/**'
       - 'scripts/check-hmo-master-draft.mjs'
+      - 'scripts/check-hmo-draft-browser.mjs'
       - '.github/workflows/act-882-hmo-draft-parity.yml'
   workflow_dispatch:
 permissions:
@@ -16,5 +17,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Test staged HMO section order and financial inputs
+      - name: Structural and source financial tests
         run: node scripts/check-hmo-master-draft.mjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Browser and PDF financial acceptance
+        run: node scripts/check-hmo-draft-browser.mjs
+      - name: Upload HMO acceptance artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HMO-draft-acceptance
+          path: |
+            /tmp/hmo-acceptance.pdf
+            /tmp/hmo-mobile.png
+          if-no-files-found: ignore
