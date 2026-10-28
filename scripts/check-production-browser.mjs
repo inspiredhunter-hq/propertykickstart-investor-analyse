@@ -49,6 +49,20 @@ for(const row of golden){
   await asking.fill('310000');
   assert.equal(Number(await page.locator('#standardStampInput').inputValue()),5100,'manual override retained');
   assert.equal(Number(await page.locator('#stampInput').inputValue()),21000);
+  const boundaryCases=[[125000,0,6250],[250000,2500,15000],[925000,36250,82500],[1500000,93750,168750],[1600000,105750,185750]];
+  await page.locator('input[name="haSdltMethod"][value="higher"]').check();
+  for(const [price,standardExpected,higherExpected] of boundaryCases){
+   await asking.fill(String(price));
+   assert.equal(Number(await page.locator('#stampInput').inputValue()),higherExpected,'higher SDLT band boundary '+price);
+   // A manually overridden standard estimate must not be replaced automatically.
+  }
+  await page.evaluate(()=>{delete document.getElementById('standardStampInput').dataset.userOverride;});
+  await asking.fill('120000');
+  for(const [price,standardExpected,higherExpected] of boundaryCases){
+   await asking.fill(String(price));
+   assert.equal(Number(await page.locator('#standardStampInput').inputValue()),standardExpected,'standard SDLT band boundary '+price);
+  }
+  await page.locator('input[name="haSdltMethod"][value="standard"]').check();
   await asking.fill(String(original));
   await page.locator('#standardStampInput').fill(String(std));
   await page.locator('input[name="haSdltMethod"][value="higher"]').check();
