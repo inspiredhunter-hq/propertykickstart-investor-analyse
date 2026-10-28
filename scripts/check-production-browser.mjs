@@ -32,7 +32,7 @@ for(const row of golden){
  assert.equal(await page.locator(reveal).isEnabled(),true);
  await page.locator(reveal).click();
  assert.equal(await page.locator(gate).isVisible(),false,'gate closes only after acknowledgement');
- if(row.type==='ha' && row.path!=='index.html'){
+ if(row.type==='ha'){
   const asking=page.locator('#priceInput');
   const original=Number(await asking.inputValue());
   const high=original===550000?45000:19000;
