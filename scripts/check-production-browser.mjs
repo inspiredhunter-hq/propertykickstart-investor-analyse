@@ -91,6 +91,25 @@ for(const row of golden){
    assert.ok(helpBox.width>=180,'expanded mobile help must be readable, not a narrow strip');
    await help.locator('summary').click();
    assert.equal(await card2.locator('#price').inputValue(),'135,000','pence hidden by default for whole-pound figures');
+   // ACT-882: selected SDLT is the sole acquisition contribution, default higher.
+   assert.equal(await card2.locator('input[name="sdltMethod"]:checked').inputValue(),'higher');
+   assert.equal(cash(await card2.locator('#sdltStandardInput').inputValue()),200);
+   assert.equal(cash(await card2.locator('#sdltHigherInput').inputValue()),6950);
+   const originalCapital=cash(await card2.locator('#capitalOut').textContent());
+   await card2.locator('input[name="sdltMethod"][value="standard"]').check();
+   assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-(originalCapital-6750*1.1))<0.02,'standard SDLT reduces capital exactly once');
+   await card2.locator('input[name="sdltMethod"][value="higher"]').check();
+   assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-originalCapital)<0.02,'restoring higher SDLT restores capital');
+   assert.equal(cash(await card2.locator('#broker').inputValue()),1350);
+   await card2.locator('#broker').fill('1400');
+   await card2.locator('#price').fill('140000');
+   assert.equal(cash(await card2.locator('#broker').inputValue()),1400,'user broker override survives price change');
+   await card2.locator('#price').fill('135000');
+   await card2.locator('#broker').fill('1350');
+   assert.ok(Math.abs(cash(await card2.locator('#capitalOut').textContent())-originalCapital)<0.02,'original capital restored after override test');
+   assert.equal(await card2.locator('#pAcquisition').count(),0,'print-only rows are not interleaved with on-screen fields');
+   assert.equal(await page.locator('#pAcquisition .row').last().innerText().then(t=>t.includes('Total capital required')),true,'PDF acquisition total is final row');
+
    assert.equal(await card2.locator('#mortgageAmountOut').count(),1,'mortgage amount follows LTV control');
    assert.ok(Math.abs(cash(await card2.locator('#capitalWithoutOut').textContent())-50649)<0.01,'baseline excludes contingency');
    assert.ok(Math.abs(cash(await card2.locator('#contingencyOut').textContent())-5064.90)<0.01,'10 percent contingency calculated on unreserved capital');
