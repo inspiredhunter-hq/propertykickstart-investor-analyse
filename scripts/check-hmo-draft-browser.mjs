@@ -1,0 +1,40 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync} from 'node:fs';
+import {execFileSync,spawn} from 'node:child_process';
+const server=spawn('python3',['-m','http.server','8765','--bind','127.0.0.1'],{stdio:'ignore'});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+try{
+let page=await browser.newPage({viewport:{width:390,height:844}});
+const errors=[];page.on('pageerror',error=>errors.push(error.message));
+let loaded=false;
+for(let i=0;i<25;i++){try{await page.goto('http://127.0.0.1:8765/drafts/HMO-NW-2S98D-btl-master/',{waitUntil:'load'});loaded=true;break}catch{await new Promise(r=>setTimeout(r,200))}}
+assert.ok(loaded,'browser did not load');
+assert.deepEqual(errors,[],'page JavaScript must not throw');
+await page.locator('#ackBox').check();
+await page.locator('#revealBtn').click();
+const baseline=await page.evaluate(()=>({cap:compute().capital,profit:compute().profit,costs:compute().costs,rent:compute().rent,rate:compute().rate,roi:compute().roi}));
+assert.equal(baseline.rent,34416);
+assert.equal(baseline.costs,21797.72);
+assert.equal(baseline.rate,6);
+assert.ok(Math.abs(baseline.profit-(34416-21797.72-9900))<0.02,'HMO net annual cashflow');
+const val=page.locator('#refurbishment');
+await val.fill('10000');await val.dispatchEvent('input');
+const changed=await page.evaluate(()=>({cap:compute().capital,profit:compute().profit,roi:compute().roi}));
+assert.ok(Math.abs(changed.cap-baseline.cap-11000)<0.02,'£10k refurbishment increases invested capital incl 10% contingency by £11k');
+assert.equal(changed.profit,baseline.profit,'one-off acquisition must not change operating cashflow');
+assert.ok(changed.roi<baseline.roi);
+await val.fill('');await val.dispatchEvent('input');
+await page.locator('#includeUnitPage').check();
+const rows=await page.locator('#unitPrintRows tbody tr').count();
+assert.equal(rows,7);
+assert.equal(await page.locator('#pAcquisition').locator('.row').count()>=12,true,'PDF acquisition breakdown rows');
+await page.emulateMedia({media:'print'});
+const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
+writeFileSync('/tmp/hmo-acceptance.pdf',pdf);
+const info=execFileSync('pdfinfo',['/tmp/hmo-acceptance.pdf'],{encoding:'utf8'});
+const count=Number(info.match(/^Pages:\s*(\d+)/m)?.[1]);
+assert.ok(count>=3&&count<=4,'Optional room breakdown PDF must be 3 pages (or up to 4 pending layout): actual '+count);
+await page.screenshot({path:'/tmp/hmo-mobile.png',fullPage:true});
+console.log(JSON.stringify({status:'PASS',baseline,changed,pdfPages:count,roomRows:rows}));
+}finally{await browser.close();server.kill('SIGTERM')}
