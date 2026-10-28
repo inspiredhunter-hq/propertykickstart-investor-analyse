@@ -1,0 +1,32 @@
+name: St Helens Test URL browser and PDF acceptance
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Test/HMO/2S98D/index.html'
+      - 'scripts/check-hmo-test-preview.mjs'
+      - '.github/workflows/hmo-test-preview.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          sudo apt-get update -qq && sudo apt-get install -y poppler-utils
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/check-hmo-test-preview.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HMO-test-acceptance
+          path: |
+            /tmp/hmo-acceptance.pdf
+            /tmp/hmo-mobile.png
+          if-no-files-found: ignore
