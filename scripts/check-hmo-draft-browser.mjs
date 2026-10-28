@@ -29,7 +29,7 @@ assert.equal(reordered.profit,baseline.profit,'reordering must not alter cashflo
 assert.equal(reordered.roi,baseline.roi,'reordering must not alter ROI');
 const tax=page.locator('[data-field-id="op.council_tax"]');
 await tax.fill('0');await tax.dispatchEvent('input');
-assert.ok(Math.abs((await page.evaluate(()=>compute().costs))-(baseline.costs-2406.24))<0.02,'explicit zero must remove council tax');
+const afterTax=await page.evaluate(()=>({costs:compute().costs,items:[...document.querySelectorAll('.cost-input')].map(x=>({id:x.dataset.fieldId,value:x.value})),management:document.getElementById('managementRate').value}));console.log('DIAGNOSTIC_COUNCIL',JSON.stringify({before:baseline.costs,afterTax}));assert.ok(Math.abs(afterTax.costs-(baseline.costs-2406.24))<0.02,'explicit zero must remove council tax');
 await tax.fill('2406.24');await tax.dispatchEvent('input');
 assert.ok(Math.abs((await page.evaluate(()=>compute().costs))-baseline.costs)<0.02);
 await page.evaluate(()=>{document.querySelector('[data-field-id="op.council_tax"]').dataset.fieldId='op.utilities'});
