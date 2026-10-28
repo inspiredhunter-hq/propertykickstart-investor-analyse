@@ -12,7 +12,7 @@ assert.match(src,/data-property-code="HMO-NW-2S98D"/);
 assert.match(src,/id="rate"[^>]*value="6"/);
 assert.match(src,/id="managementRate"[^>]*value="12"/);
 assert.doesNotMatch(src,/Our illustration assumes|What could be different\?/,'excluded duplicate risk table');
-const roomJson=src.match(/<script type="application\\/json" id="unitRentalData">([\\s\\S]*?)<\\/script>/);
+const roomJson=src.match(new RegExp('<script type="application/json" id="unitRentalData">([\\s\\S]*?)</script>'));
 assert.ok(roomJson,'room rental JSON must exist');
 const roomData=JSON.parse(roomJson[1]);
 assert.equal(roomData.unitCount,7);
