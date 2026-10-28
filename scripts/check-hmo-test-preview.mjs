@@ -17,6 +17,7 @@ const baseline=await page.evaluate(()=>({cap:compute().capital,profit:compute().
 assert.equal(baseline.rent,34416);
 assert.equal(baseline.costs,21237.72);
 assert.equal(await page.locator('#broker').isEditable(),true,'broker fee editable');
+assert.ok((await page.locator('#pkfee').count())===1,'PK fee is calculated display, not editable');
 assert.equal(Number((await page.locator('#broker').inputValue()).replace(/,/g,'')),2200,'broker fee starts at 1%');
 assert.equal(await page.locator('#sdltChoice').inputValue(),'higher');
 assert.equal(await page.locator('#sdltStandardOut').textContent(),'£1,900.00');
