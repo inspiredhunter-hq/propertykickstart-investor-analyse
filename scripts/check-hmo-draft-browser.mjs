@@ -29,6 +29,7 @@ await page.locator('#includeUnitPage').check();
 const rows=await page.locator('#unitPrintRows tbody tr').count();
 assert.equal(rows,7);
 assert.equal(await page.locator('#pAcquisition').locator('.row').count()>=12,true,'PDF acquisition breakdown rows');
+assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4,'each unspecified one-off cost clearly unconfirmed in printable PDF');
 await page.emulateMedia({media:'print'});
 const pdf=await page.pdf({format:'A4',printBackground:true,preferCSSPageSize:true});
 writeFileSync('/tmp/hmo-acceptance.pdf',pdf);
