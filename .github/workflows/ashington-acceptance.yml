@@ -1,4 +1,4 @@
-name: Ashington HMO deployed review acceptance
+name: Ashington HMO candidate acceptance
 on:
   push:
     branches: [review/hmo-wm-5ng2e]
@@ -18,10 +18,8 @@ jobs:
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
       - run: node scripts/ashington-qa.mjs
-        env:
-          ASH_URL: https://deals.propertykickstart.co.uk/Test/HMO/5NG2E/
       - if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ash-hmo-live-qa
+          name: ash-hmo-qa
           path: qa-output/
