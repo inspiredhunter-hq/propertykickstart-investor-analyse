@@ -23,6 +23,7 @@ try {
   await page.emulateMedia({media:'screen'});
   await page.locator('#ackBox').check(); await page.locator('#revealBtn').click();
   const base = await page.evaluate(()=>compute());
+  const reservePercent = Number(await page.locator('#reserve').inputValue());
   const renewal = await page.locator('[data-field-id="op.hmo_licence"]').inputValue();
   const raw = id=>page.locator('#'+id);
   const fill = async(id,value)=>{await raw(id).fill(String(value));await raw(id).dispatchEvent('input');};
@@ -42,7 +43,7 @@ try {
    await fill(id,'1,234.56'); await raw(id).blur();
    const c=await page.evaluate(()=>compute());
    close(c.capitalWithout,zero.capitalWithout+1234.56,label+' acquisition');
-   close(c.capital,(zero.capitalWithout+1234.56)*1.1,label+' contingency');
+   close(c.capital,(zero.capitalWithout+1234.56)*(1+reservePercent/100),label+' contingency');
    close(c.profit,base.profit,label+' leaves annual cashflow unchanged');
    close(c.roi,c.profit/c.capital*100,label+' ROI');
    assert.match(await page.locator('#pAcquisition').innerText(),new RegExp(label+'\\s*£1,234\\.56'));
