@@ -81,7 +81,8 @@ assert.equal(await page.locator('#pAcquisition').locator('.row').last().innerTex
 assert.equal(await page.locator('#pAcquisition').getByText('SDLT', {exact:false}).count(),1,'only chosen SDLT in PDF');
 assert.ok((await page.locator('#printContent').innerText()).includes('7-bedroom HMO'));
 assert.ok((await page.locator('#ackTitle').innerText()).includes('7-bedroom HMO'));
-assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4,'each unspecified one-off cost clearly unconfirmed in printable PDF');
+const newLicensingFields=await page.locator('#hmoLicenceApplication').count();
+assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4+(newLicensingFields?3:0),'each unspecified one-off cost clearly unconfirmed in printable PDF');
 const mobileWidth=await page.evaluate(()=>({viewport:document.documentElement.clientWidth,content:document.documentElement.scrollWidth}));
 assert.ok(mobileWidth.content<=mobileWidth.viewport+1,'mobile screen must have no horizontal overflow: '+JSON.stringify(mobileWidth));
 await page.screenshot({path:'/tmp/hmo-mobile.png',fullPage:true});
