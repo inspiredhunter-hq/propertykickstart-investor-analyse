@@ -1,0 +1,27 @@
+name: Ashington HMO deployed correction acceptance
+on:
+  push:
+    branches: [review/hmo-wm-5ng2e]
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/ashington-qa.mjs
+        env:
+          ASH_URL: https://deals.propertykickstart.co.uk/Test/HMO/5NG2E/
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ash-hmo-qa
+          path: qa-output/
