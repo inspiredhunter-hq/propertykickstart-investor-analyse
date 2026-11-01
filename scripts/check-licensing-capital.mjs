@@ -45,7 +45,7 @@ try {
    close(c.capital,(zero.capitalWithout+1234.56)*1.1,label+' contingency');
    close(c.profit,base.profit,label+' leaves annual cashflow unchanged');
    close(c.roi,c.profit/c.capital*100,label+' ROI');
-   assert.match(await page.locator('#pAcquisition').innerText(),new RegExp(label+'\\s+£1,234.56'));
+   assert.match(await page.locator('#pAcquisition').innerText(),new RegExp(label+'\\s*£1,234\\.56'));
    await fill(id,'');
   }
   await fill('hmoLicenceApplication',1571);await fill('additionalLicensing',222.22);await fill('selectiveLicensing',333.33);
