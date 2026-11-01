@@ -34,7 +34,8 @@ assert.equal(Number((await page.locator('[data-field-id="op.boiler_cover"]').inp
 assert.ok(Math.abs(baseline.profit-(34416-21336.72-9900))<0.02,'HMO net annual cashflow');
 // Semantic-ID tests: moving display rows must not affect results.
 const identities=await page.locator('.cost-input').evaluateAll(els=>els.map(e=>e.dataset.fieldId));
-assert.equal(new Set(identities).size,22,'itemised operating-cost IDs must be unique');
+const registrationRow=await page.locator('[data-field-id="op.landlord_registration"]').count();
+assert.equal(new Set(identities).size,22+registrationRow,'itemised operating-cost IDs must be unique');
 assert.ok(identities.includes('op.council_tax')&&identities.includes('op.utilities'));
 await page.evaluate(()=>{const input=document.querySelector('[data-field-id="op.council_tax"]');const row=input.closest('label');row.dataset.testCouncilTax='true';row.parentElement.insertBefore(row,row.parentElement.querySelector('label.cost'));});
 const reordered=await page.evaluate(()=>compute());
@@ -81,7 +82,8 @@ assert.equal(await page.locator('#pAcquisition').locator('.row').last().innerTex
 assert.equal(await page.locator('#pAcquisition').getByText('SDLT', {exact:false}).count(),1,'only chosen SDLT in PDF');
 assert.ok((await page.locator('#printContent').innerText()).includes('7-bedroom HMO'));
 assert.ok((await page.locator('#ackTitle').innerText()).includes('7-bedroom HMO'));
-assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4,'each unspecified one-off cost clearly unconfirmed in printable PDF');
+const newLicensingFields=await page.locator('#hmoLicenceApplication').count();
+assert.equal(await page.locator('#pAcquisition').getByText('Not confirmed').count(),4+(newLicensingFields?3:0)+(await page.locator('#landlordRegistrationInitial').count()),'each unspecified one-off cost clearly unconfirmed in printable PDF');
 const mobileWidth=await page.evaluate(()=>({viewport:document.documentElement.clientWidth,content:document.documentElement.scrollWidth}));
 assert.ok(mobileWidth.content<=mobileWidth.viewport+1,'mobile screen must have no horizontal overflow: '+JSON.stringify(mobileWidth));
 await page.screenshot({path:'/tmp/hmo-mobile.png',fullPage:true});

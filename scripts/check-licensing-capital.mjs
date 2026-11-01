@@ -6,7 +6,7 @@ import { execFileSync, spawn } from 'node:child_process';
 const origin = process.env.PK_TEST_ORIGIN || 'http://127.0.0.1:8766';
 const server = process.env.PK_TEST_ORIGIN ? null : spawn('python3', ['-m','http.server','8766','--bind','127.0.0.1'], {stdio:'ignore'});
 const browser = await chromium.launch({headless:true,args:['--no-sandbox']});
-const fields = [['hmoLicenceApplication','HMO licence application fee'],['additionalLicensing','Additional licensing fee'],['selectiveLicensing','Selective licensing fee']];
+const fields = [['hmoLicenceApplication','HMO licence application fee'],['additionalLicensing','Additional licensing fee'],['selectiveLicensing','Selective licensing fee'],['landlordRegistrationInitial','Property registration fee']];
 const close = (a,b,msg) => assert.ok(Math.abs(a-b)<0.005, `${msg}: ${a} vs ${b}`);
 const evidence = [];
 mkdirSync('qa-evidence/licensing', {recursive:true});
@@ -24,6 +24,9 @@ try {
   await page.locator('#ackBox').check(); await page.locator('#revealBtn').click();
   const base = await page.evaluate(()=>compute());
   const reservePercent = Number(await page.locator('#reserve').inputValue());
+  const registrationRenewal = page.locator('[data-field-id="op.landlord_registration"]');
+  assert.equal(await registrationRenewal.inputValue(),'','registration renewal remains blank');
+  assert.equal(await page.locator('#landlordRegistrationInitial').inputValue(),'','initial registration remains blank');
   const renewal = await page.locator('[data-field-id="op.hmo_licence"]').inputValue();
   const raw = id=>page.locator('#'+id);
   const fill = async(id,value)=>{await raw(id).fill(String(value));await raw(id).dispatchEvent('input');};
@@ -38,6 +41,12 @@ try {
   const initialFees = await page.evaluate(()=>num('hmoLicenceApplication')+num('additionalLicensing')+num('selectiveLicensing'));
   for(const [id] of fields)await fill(id,'');
   const zero=await page.evaluate(()=>compute());
+  await registrationRenewal.fill('65');await registrationRenewal.dispatchEvent('input');
+  const annualReg=await page.evaluate(()=>compute());
+  close(annualReg.capital,zero.capital,'annual registration does not add acquisition capital');
+  close(annualReg.costs,zero.costs+65,'annual registration cost');
+  close(annualReg.profit,zero.profit-65,'annual registration cashflow');
+  await registrationRenewal.fill('');await registrationRenewal.dispatchEvent('input');
   close(base.capitalWithout-zero.capitalWithout,initialFees,'initial fees counted once');
   for(const [id,label] of fields){
    await fill(id,'1,234.56'); await raw(id).blur();
