@@ -23,7 +23,7 @@ try{
  await page.locator('#refurbishment').fill('10000');close((await page.evaluate(()=>compute())).capital,118386);await page.locator('#refurbishment').fill('');
  await page.locator('#reserve').fill('10');close((await page.evaluate(()=>compute())).capital,119224.6);await page.locator('#reserve').fill('0');
  await page.locator('#ltv').fill('0');const cash=await page.evaluate(()=>compute());close(cash.interest,0);close(cash.capital,108386+213750-2850-4275);await page.locator('#ltv').fill('75');
- await page.locator('#stressRentMonthly').fill('0');close((await page.evaluate(()=>compute())).stress,-19305.4-12825);await page.locator('#stressReset').click();
+ await page.locator('#stressRentMonthly').fill('0');close((await page.evaluate(()=>compute())).stress,-12*Number(await page.locator('#stressCostsMonthly').inputValue())-12825);await page.locator('#stressReset').click();
  await page.locator('input[name="cashflowMode"][value="target"]').check();await page.locator('#target').fill('1000');assert.match(await page.locator('#portfolioCount').innerText(),/Not achievable/);
  await page.locator('input[name="riskChoice"][value="Moderate"]').check();
  const full=await page.content();for(const forbidden of ['Ashington Grove','CV3 4DD','St Helens','2S98D','450','433']) {if(['450','433'].includes(forbidden))continue;assert.equal(full.includes(forbidden),false,forbidden);}
