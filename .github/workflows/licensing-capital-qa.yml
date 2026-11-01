@@ -1,0 +1,45 @@
+name: Licensing capital fields browser acceptance
+on:
+  pull_request:
+    paths:
+      - 'test/hmo/**'
+      - 'scripts/check-licensing-capital.mjs'
+      - '.github/workflows/licensing-capital-qa.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'test/hmo/**'
+      - 'scripts/check-licensing-capital.mjs'
+      - '.github/workflows/licensing-capital-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  licensing-capital:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: |
+          sudo apt-get update -qq && sudo apt-get install -y poppler-utils
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/check-licensing-capital.mjs
+      - name: Verify deployed review routes
+        if: github.event_name == 'push'
+        env:
+          PK_TEST_ORIGIN: https://deals.propertykickstart.co.uk
+        run: |
+          for attempt in $(seq 1 12); do
+            if node scripts/check-licensing-capital.mjs; then exit 0; fi
+            echo "Waiting for review routes to deploy (attempt $attempt)"
+            sleep 15
+          done
+          exit 1
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: licensing-capital-qa
+          path: qa-evidence/licensing/
