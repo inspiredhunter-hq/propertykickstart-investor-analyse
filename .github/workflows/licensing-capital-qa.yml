@@ -27,6 +27,17 @@ jobs:
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
       - run: node scripts/check-licensing-capital.mjs
+      - name: Verify deployed review routes
+        if: github.event_name == 'push'
+        env:
+          PK_TEST_ORIGIN: https://deals.propertykickstart.co.uk
+        run: |
+          for attempt in $(seq 1 12); do
+            if node scripts/check-licensing-capital.mjs; then exit 0; fi
+            echo "Waiting for review routes to deploy (attempt $attempt)"
+            sleep 15
+          done
+          exit 1
       - if: always()
         uses: actions/upload-artifact@v4
         with:
