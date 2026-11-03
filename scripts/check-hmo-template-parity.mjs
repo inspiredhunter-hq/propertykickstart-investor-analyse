@@ -17,6 +17,10 @@ try{
   assert.equal(await page.locator('#ackBox').isChecked(),false);assert.equal(await page.locator('#revealBtn').isDisabled(),true);
   await page.emulateMedia({media:'print'});assert.equal(await page.locator('#printContent').isVisible(),false);await page.emulateMedia({media:'screen'});
   await page.locator('#ackBox').check();await page.locator('#revealBtn').click();
+  const resetStyle=await page.locator('#resetSdltValues').evaluate(el=>{const s=getComputedStyle(el);return {background:s.backgroundColor,color:s.color,fontSize:s.fontSize,border:s.borderTopWidth};});
+  assert.deepEqual(resetStyle,{background:'rgb(255, 255, 255)',color:'rgb(76, 38, 120)',fontSize:'13px',border:'1px'},'outlined reset matches BTL reference');
+  assert.ok(Number(await page.locator('.sdlt-choice').evaluate(el=>getComputedStyle(el).fontWeight))>=650,'SDLT label bold');
+  const resetBox=await page.locator('#resetSdltValues').boundingBox(),selectBox=await page.locator('#sdltSurchargeChoice').boundingBox();assert.ok(Math.abs(resetBox.x+resetBox.width-selectBox.x-selectBox.width)<=1,'reset aligned to right');
   const base=await page.evaluate(()=>compute());near(base.rent,rent*12,'source aggregate rent retained');near(base.costs,expectedCosts,'default annual costs');
   near(await page.evaluate(()=>num('stamp')),standard+price*.05,'split SDLT default total');
   assert.equal((await page.locator('#totalSdltOut').innerText()).replace(/[^0-9.]/g,''),String(standard+price*.05),'visible total SDLT');
