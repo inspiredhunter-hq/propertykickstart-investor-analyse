@@ -51,7 +51,7 @@ try{
   await page.locator('#unitDetails').evaluate(el=>el.open=true);
   assert.equal(await page.locator('#unitRows tbody tr').count(),code==='5NG2E'?5:7);
   if(code==='5NG2E'){
-   assert.equal(await page.locator('#unitRows').getByText('Not confirmed',{exact:true}).count(),10);
+   assert.equal(await page.locator('#unitRows').getByText('TBA',{exact:true}).count(),10);
    assert.equal(await page.locator('#unitRows').getByText('£0.00',{exact:true}).count(),0);
   }
   for(const width of [320,390,430,1280]){
