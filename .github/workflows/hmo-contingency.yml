@@ -1,0 +1,23 @@
+name: HMO 10 percent contingency acceptance
+on:
+  push:
+    branches: [review/hmo-contingency-10pct-20261103]
+permissions:
+  contents: read
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - run: |
+          sudo apt-get update -qq && sudo apt-get install -y poppler-utils
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/check-hmo-contingency.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hmo-contingency-qa
+          path: qa-evidence/hmo-parity/
