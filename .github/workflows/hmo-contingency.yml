@@ -15,14 +15,7 @@ jobs:
           sudo apt-get update -qq && sudo apt-get install -y poppler-utils
           npm install --no-save --no-package-lock playwright
           npx playwright install --with-deps chromium
-      - run: |
-          for attempt in $(seq 1 15); do
-            if node scripts/check-hmo-contingency.mjs; then exit 0; fi
-            sleep 15
-          done
-          exit 1
-        env:
-          PK_TEST_ORIGIN: https://deals.propertykickstart.co.uk
+      - run: node scripts/check-hmo-contingency.mjs
       - if: always()
         uses: actions/upload-artifact@v4
         with:
