@@ -19,6 +19,7 @@ try{
   await page.locator('#ackBox').check();await page.locator('#revealBtn').click();
   const base=await page.evaluate(()=>compute());near(base.rent,rent*12,'source aggregate rent retained');near(base.costs,expectedCosts,'default annual costs');
   near(await page.evaluate(()=>num('stamp')),standard+price*.05,'split SDLT default total');
+  assert.equal((await page.locator('#totalSdltOut').innerText()).replace(/[^0-9.]/g,''),String(standard+price*.05),'visible total SDLT');
   near(await page.evaluate(()=>num('sdltHigherInput')),price*.05,'surcharge is 5% component, not combined total');
   await page.locator('#sdltSurchargeChoice').selectOption('exclude');await page.locator('#sdltSurchargeChoice').dispatchEvent('change');
   const standardOnly=await page.evaluate(()=>compute());near(base.capitalWithout-standardOnly.capitalWithout,price*.05,'surcharge counted once');
@@ -27,6 +28,7 @@ try{
   await page.locator('#sdltHigherInput').fill('1,234.56');await page.locator('#sdltHigherInput').dispatchEvent('input');
   near(await page.evaluate(()=>num('stamp')),standard+1234.56,'manual surcharge');
   await page.locator('#price').fill(String(price+10000));await page.locator('#price').dispatchEvent('input');near(await page.evaluate(()=>num('sdltHigherInput')),1234.56,'manual surcharge override survives price edit');
+  await page.locator('#resetSdltValues').click();near(await page.evaluate(()=>num('sdltHigherInput')),(price+10000)*.05,'reset restores calculated surcharge');
   await page.reload({waitUntil:'networkidle'});await page.locator('#ackBox').check();await page.locator('#revealBtn').click();
   for(const id of ['op.service_charge','op.ground_rent']){
    const field=page.locator(`[data-field-id="${id}"]`);assert.equal(await field.inputValue(),'','unknown charge blank');
