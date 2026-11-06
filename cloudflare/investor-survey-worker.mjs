@@ -15,6 +15,12 @@ const sets=[
 ["A fully managed service, with most of the process handled for me.","Personal support with specific parts of the process.","Access to suitable properties, with me managing the acquisition.","Tools and resources to help me manage the process independently.","I wouldn't need additional support.","Other"],
 ["Yes, I'm actively looking","Possibly, for the right opportunity","Not at the moment"]
 ];
+const PROFESSIONALS=["Mortgage brokers","Solicitors and conveyancers","Accountants and tax specialists","Surveyors and valuers","Insurers","Builders and project managers","Letting agents and property managers","Bookkeepers","Financial advisers (where relevant)","Specialist trust or estate professionals (where relevant)","Other"];
+function professionalData(p){
+ if(!p.answers?.[3]?.includes("Finding reliable professionals"))return undefined;
+ const f=p.professional_followup;
+ return f?.wantsToTell===true?{wantsToTell:true,selected:f.selected,other:f.selected.includes("Other")?f.other:""}:undefined;
+}
 function validate(p){
  const a=p.answers,o=p.other||{};
  if(!a||typeof a!=="object"||Array.isArray(a)||!o||typeof o!=="object"||Array.isArray(o))return false;
@@ -31,6 +37,10 @@ function validate(p){
  }
  if(a[0]==="No"&&a[5]==="I'm already acquiring properties")return false;
  if(Object.values(o).some(v=>typeof v!=="string"||v.length>500))return false;
+ const f=p.professional_followup;
+ if(f!==undefined){
+  if(!f||typeof f!=="object"||Array.isArray(f)||typeof f.wantsToTell!=="boolean"||!Array.isArray(f.selected)||f.selected.length>PROFESSIONALS.length||new Set(f.selected).size!==f.selected.length||f.selected.some(x=>!PROFESSIONALS.includes(x))||typeof f.other!=="string"||f.other.length>500)return false;
+ }
  const c=p.contact||{};
  if(typeof c!=="object"||Array.isArray(c))return false;
  if(["name","email","mobile"].some(k=>typeof(c[k]||"")!=="string"||(c[k]||"").length>200))return false;
@@ -72,7 +82,7 @@ export default {async fetch(request,env){
   "Landlord":{select:{name:a[0]}},
   "Investor interest":{rich_text:rich(a[10])},
   "Submission ID":{rich_text:rich(p.submission_id)},
-  "Answers JSON":{rich_text:rich(JSON.stringify({answers:a,other:p.other||{}}))},
+  "Answers JSON":{rich_text:rich(JSON.stringify({answers:a,other:p.other||{},professional_followup:professionalData(p)}))},
   "Test response":{checkbox:true},
   "Contact name":{rich_text:rich((p.contact.name||"").trim())},
   "Contact email":{email:(p.contact.email||"").trim()||null},
