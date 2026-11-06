@@ -1,6 +1,11 @@
 name: Deploy PK Investor Survey Worker
 on:
   workflow_dispatch:
+    inputs:
+      qa_only:
+        description: Run checks only without deploying the Worker
+        type: boolean
+        default: true
 permissions:
   contents: read
 jobs:
@@ -8,7 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Run survey regression suites
+        run: |
+          node tests/investor-survey-regression.mjs
+          node tests/investor-survey-production.mjs
+      - name: Install browser test dependencies
+        run: |
+          npm install --prefix /tmp/pk-survey-qa --no-save playwright@1.62.1
+          /tmp/pk-survey-qa/node_modules/.bin/playwright install --with-deps chromium
+      - name: Verify responsive production candidate
+        env:
+          NODE_PATH: /tmp/pk-survey-qa/node_modules
+        run: node tests/investor-survey-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: survey-responsive-evidence
+          path: survey-qa/
       - name: Check deployment credentials
+        if: ${{ !inputs.qa_only }}
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -16,6 +39,7 @@ jobs:
           test -n "$CF_TOKEN" || { echo 'Missing CLOUDFLARE_API_TOKEN'; exit 1; }
           test -n "$CF_ACCOUNT" || { echo 'Missing CLOUDFLARE_ACCOUNT_ID'; exit 1; }
       - name: Deploy isolated survey Worker
+        if: ${{ !inputs.qa_only }}
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
