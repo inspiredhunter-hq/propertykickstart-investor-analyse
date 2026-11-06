@@ -49,3 +49,17 @@ vm.runInContext('resetFollowing(1)',frontend);
 assert.equal(vm.runInContext('professionalFollowup.wantsToTell',frontend),false);
 assert.equal(vm.runInContext('professionalFollowup.selected.length',frontend),0);
 console.log('PASS: optional professionals omitted/skipped/empty/Other; multiple choices; payload validation; stale parent/Other protection; branch-reset state.');
+
+
+const worker=(await import('../cloudflare/investor-survey-worker.mjs')).default;
+const originalFetch=globalThis.fetch;let savedBody;
+globalThis.fetch=async(url,init)=>{if(url.endsWith('/query'))return new Response(JSON.stringify({results:[]}));savedBody=JSON.parse(init.body);return new Response(JSON.stringify({id:'mock-response'}));};
+try{
+ for(const [answers,followup] of [[withProfessionals.answers,{wantsToTell:true,selected:['Other','Surveyors and valuers'],other:''}],[valid.answers,{wantsToTell:true,selected:['Other'],other:'stale'}]]){
+  const response=await worker.fetch(new Request('https://survey.test',{method:'POST',headers:{Origin:'https://test.propertykickstart.co.uk','content-type':'application/json'},body:JSON.stringify({...valid,answers,professional_followup:followup})}),{ALLOWED_ORIGIN:'https://test.propertykickstart.co.uk',NOTION_API_TOKEN:'local-unit-test'});
+  assert.equal(response.status,200);
+  const stored=JSON.parse(savedBody.properties['Answers JSON'].rich_text.map(x=>x.text.content).join(''));
+  if(answers===withProfessionals.answers)assert.deepEqual(stored.professional_followup,followup);else assert.equal(stored.professional_followup,undefined);
+ }
+}finally{globalThis.fetch=originalFetch}
+console.log('PASS: Worker Notion payload stores optional selections and omits stale follow-up when parent is absent.');
