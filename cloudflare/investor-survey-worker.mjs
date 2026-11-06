@@ -55,6 +55,32 @@ function rich(s){
  for(const point of s){if(chunk.length+point.length>1900){chunks.push({text:{content:chunk}});chunk=""}chunk+=point}
  chunks.push({text:{content:chunk}});return chunks;
 }
+
+function questionProperties(p){
+ const a=p.answers||{},o=p.other||{},f=professionalData(p);
+ const option=v=>v?{select:{name:v.replaceAll(",","")}}:{select:null};
+ const text=v=>({rich_text:rich(v||"")});
+ const props={
+  "Q2 | Property plans":option(a[1]),
+  "Q3 | Investment objectives - first priority":option(a[2]?.[0]),
+  "Q3 | Investment objectives - second priority":option(a[2]?.[1]),
+  "Q4 | Biggest challenges":{multi_select:(a[3]||[]).map(name=>({name}))},
+  "Q4 | Professional follow-up":option(f?"Yes":null),
+  "Q4 | Professionals":{multi_select:(f?.selected||[]).map(name=>({name}))},
+  "Q4 | Other professionals":text(f?.other),
+  "Q5 | Property decision - first priority":option(a[4]?.[0]),
+  "Q5 | Property decision - second priority":option(a[4]?.[1]),
+  "Q6 | Reason for not acquiring":option(a[5]),
+  "Q7 | Support valued - first priority":option(a[6]?.[0]),
+  "Q7 | Support valued - second priority":option(a[6]?.[1]),
+  "Q8 | What has not worked":text(a[7]),
+  "Q9 | What would make it easier":text(a[8]),
+  "Q10 | Preferred support":option(a[9])
+ };
+ for(const i of [2,3,4,5,6,9])props["Q"+(i+1)+" | Other detail"]=text((a[i]==="Other"||Array.isArray(a[i])&&a[i].includes("Other"))?o[i]:"");
+ return props;
+}
+
 export default {async fetch(request,env){
  const origin=request.headers.get("Origin")||"";
  const allowedOrigins=(env.ALLOWED_ORIGIN||"https://deals.propertykickstart.co.uk").split(",").map(x=>x.trim());
@@ -77,7 +103,8 @@ export default {async fetch(request,env){
  if(existing.results?.length)return reply({saved:true,id:existing.results[0].id},200);
  const a=p.answers;
  const body={parent:{database_id:DB},properties:{
-  "Response":{title:rich("2027 Survey "+p.submission_id.slice(0,8))},
+  ...questionProperties(p),
+  "Response":{title:rich(((p.contact.name||"").trim()||"Anonymous")+" | 2027 Survey "+p.submission_id.slice(0,8))},
   "Submitted at":{date:{start:new Date().toISOString()}},
   "Landlord":{select:{name:a[0]}},
   "Investor interest":{rich_text:rich(a[10])},
