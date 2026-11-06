@@ -8,7 +8,7 @@ Governing ACT: https://app.notion.com/p/4102aad7d30e81b2b6bffd2cc16e7d6a
 Repository: inspiredhunter-hq/propertykickstart-investor-analyse
 Candidate branch: release/survey-live-20261106
 Base SHA: 6ad1461ee0eb4753f1de2236df5a755627cf7da6
-Candidate commit and PR: link from ACT after candidate save; reconcile exact reviewed SHA before approval.
+Candidate PR: https://github.com/inspiredhunter-hq/propertykickstart-investor-analyse/pull/94 . Previous documentation HEAD dd5b44fabc6757e6d65d1eec46e1f877b5dc10e1; reconcile final exact reviewed SHA before approval.
 Authority: annual URL and survey launch scope approved in ACT. Current instruction holds actual deployment.
 
 ## Ready sweep
@@ -77,3 +77,11 @@ Final release summary: pending; nothing deployed by this candidate preparation.
 ## Access blocker resolved, 6 November 2026
 
 Hanna connected the survey's existing Notion integration to Investors DB. The unchanged deployed343381a then saved submission5131c512-a31a-42ab-947d-d8d61abef6d7 and automatically linked response4102aad7d30e811793c1d46c698af130 to existing Synthetic QA investor4012aad7d30e817cacd3cf8f2f89f89e. Direct Notion reads verified both relation directions. Mixed-case email matched; consentfalse and Brevo syncfalse unchanged. Controlled QA row subsequently marked TESTtrue and unlinked after evidence capture. Canonical access bug4102aad7d30e81b3afa1e19d2abbae60 Verified. This supersedes the investor-access404 blocker above. Independent assessment identity creation, survey-first later reconciliation and final release reconciliation remain to be evidenced; no public launch performed.
+
+## Latest acceptance result, 6 November 2026
+
+Supersedes earlier pending survey-first reconciliation and Assessment permission language. Natural survey reconciliation linked response4102aad7d30e81a89245f88dd7711146 (created15:09:02) to subsequently created investor4102aad7d30e81a981fbc3d07d618628 (15:09:23) at15:15:50. Both directions verified, no forced job/manual link; consentfalse/Brevofalse/Do Not Contact unchanged. QA response subsequently TEST-labelled and unlinked after evidence capture.
+
+Hanna approved the synthetic Assessment results/property-opportunities opt-in and security check. Browser completed all7 steps normally, security check Success, readiness result15. Actual PK Leads record4102aad7d30e817095dfdf6993b6fe17 saved18:59:33 UTC, submission18:58 UTC. Same email as the pre-existing Synthetic QA investor above. Investor Profile remains empty, Promoted to Investor false, Contact Match Review false; reciprocal investor Quiz Lead absent. Rechecked after investigation. Assessment save/result PASS, same-profile association FAIL. QA lead labelled synthetic / do not contact / Not Qualified; no manual linking to fabricate success.
+
+Canonical bug logged before investigation: https://app.notion.com/p/4102aad7d30e81e58820cc04ba326b9b . NOT READY. Need current deployed Assessment source, narrow correction and genuine automatic relation readback in both directions. Root cause and score-based promotion hypothesis are not established. Shared ACT-48 booking/assessment Worker must not be overwritten from incomplete source. PR26 at3c8af047e0badcaae083b2ff7e780622ddd1e074 includes wrapper/HMO modules but not the25 original ACT-48 modules mentioned in historical deployment notes. Cloudflare dashboard currently requires authentication to retrieve current deployed source. No public survey domain/DNS launch performed. No claim about backend email-send attempts; synthetic address uses reserved example.invalid and identifies no real recipient.
