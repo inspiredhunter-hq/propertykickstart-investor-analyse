@@ -63,3 +63,26 @@ try{
  }
 }finally{globalThis.fetch=originalFetch}
 console.log('PASS: Worker Notion payload stores optional selections and omits stale follow-up when parent is absent.');
+
+const mapped=vm.runInContext('questionProperties',scope);
+const fullMap=mapped({...withProfessionals,professional_followup:{wantsToTell:true,selected:["Bookkeepers","Other"],other:"Specialist QA"}});
+assert.equal(Object.keys(fullMap).length,21);
+assert.equal(fullMap["Q2 | Property plans"].select.name,valid.answers[1]);
+for(const [index,label] of [[2,"Q3 | Investment objectives"],[4,"Q5 | Property decision"],[6,"Q7 | Support valued"]]){
+ const values=valid.answers[index];
+ const props=mapped(valid);
+ assert.equal(props[label+" - first priority"].select.name,values[0].replaceAll(",",""));
+ assert.equal(props[label+" - second priority"].select?.name||null,values[1]?.replaceAll(",","")||null);
+}
+assert.equal(fullMap["Q4 | Biggest challenges"].multi_select[0].name,"Finding reliable professionals");
+assert.equal(fullMap["Q4 | Professionals"].multi_select[0].name,"Bookkeepers");
+assert.equal(fullMap["Q4 | Other professionals"].rich_text[0].text.content,"Specialist QA");
+assert.equal(mapped(valid)["Q4 | Professional follow-up"].select,null);
+assert.equal(mapped({...valid,answers:{...valid.answers,7:"😀".repeat(1000)}})["Q8 | What has not worked"].rich_text.map(r=>r.text.content).join(""),"😀".repeat(1000));
+assert.equal(mapped(nonlandlord)["Q2 | Property plans"].select.name,nonlandlord.answers[1]);
+for(const i of [2,3,4,5,6,9]){
+ const a={...valid.answers,[i]:[2,3,4,6].includes(i)?["Other"]: "Other"};
+ assert.equal(mapped({...valid,answers:a,other:{[i]:"Detail "+i}})["Q"+(i+1)+" | Other detail"].rich_text[0].text.content,"Detail "+i);
+}
+assert.equal(mapped({...valid,other:{3:"stale detail"}})["Q4 | Other detail"].rich_text[0].text.content,"");
+console.log("PASS: all dedicated Notion field mappings, rank order, professional/Other data, blank/stale protection, branch and Unicode.");
