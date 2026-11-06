@@ -17,11 +17,11 @@ const sets=[
 ];
 function validate(p){
  const a=p.answers,o=p.other||{};
- if(!a||typeof a!=="object"||Array.isArray(a)||Object.keys(a).length!==11||!o||typeof o!=="object"||Array.isArray(o))return false;
+ if(!a||typeof a!=="object"||Array.isArray(a)||!o||typeof o!=="object"||Array.isArray(o))return false;
  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(p.submission_id||""))return false;
  for(let i=0;i<11;i++){
   const v=a[i],options=i===1?(a[0]==="Yes"?yes:no):sets[i];
-  if(i===7||i===8){if(typeof v!=="string"||v.length>2000)return false;continue}
+  if(i===7||i===8){if(v!==undefined&&(typeof v!=="string"||v.length>2000))return false;continue}
   if([2,3,4,6].includes(i)){
    if(!Array.isArray(v)||new Set(v).size!==v.length||v.some(x=>!options.includes(x)))return false;
    if(i===3?(v.length<1||v.length>3):(v.length!==2&&!(i===6&&v.length===1&&v[0]==="Nothing, I prefer handling everything myself")))return false;
