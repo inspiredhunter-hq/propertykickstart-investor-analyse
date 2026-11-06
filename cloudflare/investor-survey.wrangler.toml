@@ -8,4 +8,4 @@ crons = ["*/15 * * * *"]
 
 [vars]
 LIVE_ORIGIN = "https://survey.propertykickstart.co.uk"
-ALLOWED_ORIGIN = "https://survey.propertykickstart.co.uk,https://deals.propertykickstart.co.uk,https://test.propertykickstart.co.uk,https://pk-investor-survey-test.netlify.app"
+ALLOWED_ORIGIN = "https://pk-investor-survey-preview.netlify.app,https://survey.propertykickstart.co.uk,https://deals.propertykickstart.co.uk,https://test.propertykickstart.co.uk,https://pk-investor-survey-test.netlify.app"
