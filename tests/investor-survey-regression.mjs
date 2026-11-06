@@ -66,7 +66,7 @@ console.log('PASS: Worker Notion payload stores optional selections and omits st
 
 const mapped=vm.runInContext('questionProperties',scope);
 const fullMap=mapped({...withProfessionals,professional_followup:{wantsToTell:true,selected:["Bookkeepers","Other"],other:"Specialist QA"}});
-assert.equal(Object.keys(fullMap).length,21);
+assert.equal(Object.keys(fullMap).length,32);
 assert.equal(fullMap["Q2 | Property plans"].select.name,valid.answers[1]);
 for(const [index,label] of [[2,"Q3 | Investment objectives"],[4,"Q5 | Property decision"],[6,"Q7 | Support valued"]]){
  const values=valid.answers[index];
@@ -86,3 +86,17 @@ for(const i of [2,3,4,5,6,9]){
 }
 assert.equal(mapped({...valid,other:{3:"stale detail"}})["Q4 | Other detail"].rich_text[0].text.content,"");
 console.log("PASS: all dedicated Notion field mappings, rank order, professional/Other data, blank/stale protection, branch and Unicode.");
+
+const professionalLabels=vm.runInContext('PROFESSIONALS',scope);
+for(const label of professionalLabels){
+ const p={...withProfessionals,professional_followup:{wantsToTell:true,selected:[label],other:""}};
+ const actual=mapped(p);
+ for(const candidate of professionalLabels)assert.equal(actual[candidate==="Other"?"Other professional selected":candidate].checkbox,candidate===label);
+}
+for(const p of [valid,withProfessionals,{...withProfessionals,professional_followup:{wantsToTell:true,selected:[],other:""}}]){
+ const actual=mapped(p);
+ for(const label of professionalLabels)assert.equal(actual[label==="Other"?"Other professional selected":label].checkbox,false);
+}
+const stale=mapped({...valid,professional_followup:{wantsToTell:true,selected:["Bookkeepers"],other:""}});
+assert.equal(stale.Bookkeepers.checkbox,false);
+console.log("PASS: each professional checkbox matches only its selection; omitted, empty and stale follow-up remains unticked.");
