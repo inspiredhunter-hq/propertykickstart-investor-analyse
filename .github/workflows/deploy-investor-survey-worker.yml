@@ -10,10 +10,15 @@ on:
         description: Run controlled synthetic investor lookup diagnostic after TEST backend deployment
         type: boolean
         default: false
+      inspect_assessment:
+        description: Read current Assessment Worker source only; no deployment or customer actions
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   deploy:
+    if: ${{ !inputs.inspect_assessment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,3 +62,57 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node tests/survey-lookup-diagnostic.cjs
+
+  inspect-assessment:
+    if: ${{ inputs.inspect_assessment }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Read Assessment source through existing Cloudflare connection
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        shell: python
+        run: |
+          import os, urllib.request, urllib.error, email, email.policy, json, re, hashlib
+          token = os.environ.get("CF_TOKEN", "")
+          account = os.environ.get("CF_ACCOUNT", "")
+          if not token or not account:
+              raise SystemExit("Existing Cloudflare connection is missing.")
+          endpoint = "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/pk-automation-staging/content/v2"
+          req = urllib.request.Request(endpoint, headers={"Authorization": "Bearer " + token}, method="GET")
+          try:
+              with urllib.request.urlopen(req, timeout=40) as response:
+                  raw = response.read(3000001)
+                  content_type = response.headers.get("Content-Type", "")
+                  status = response.status
+          except urllib.error.HTTPError as exc:
+              print("Assessment source read HTTP", exc.code)
+              print("No source downloaded. Existing credential permission is insufficient or expired; no permission change attempted.")
+              raise SystemExit(1)
+          if len(raw) > 3000000:
+              raise SystemExit("Source exceeds bounded read size.")
+          message = email.message_from_bytes(("Content-Type: " + content_type + "\r\nMIME-Version: 1.0\r\n\r\n").encode() + raw, policy=email.policy.default)
+          if not message.is_multipart():
+              raise SystemExit("Unexpected source response; body not logged.")
+          modules = {}
+          for part in message.iter_parts():
+              name = part.get_filename() or part.get_param("name", header="content-disposition")
+              if name and re.fullmatch(r"[A-Za-z0-9_.-]+\.mjs", name):
+                  modules[name] = part.get_payload(decode=True).decode("utf-8")
+          print("READ ONLY. No deployment, settings change, database write or message send.")
+          print("Modules:", json.dumps(sorted(modules)))
+          selected = ["quiz-consumer.mjs", "quiz-pipeline.mjs", "quiz-live-runtime.mjs", "notion-client.mjs", "lead-mapping.mjs"]
+          for name in selected:
+              code = modules.get(name)
+              if code is None:
+                  print("Module absent:", name)
+                  continue
+              print("MODULE", name, "SHA256", hashlib.sha256(code.encode()).hexdigest())
+              # Never disclose the credential, or any recognisable embedded credential.
+              if token in code or re.search(r"xkeysib-[A-Za-z0-9-]+|-----BEGIN .*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]+", code):
+                  print("Source withheld: potential embedded credential; no content logged.")
+                  continue
+              # Mask hard-coded string assignments to credential-like names.
+              code = re.sub(r"(?i)((?:[A-Za-z0-9_]*(?:token|secret|password|api_key)[A-Za-z0-9_]*)\s*[:=]\s*)([\"'])([^\r\n]*?)\2", r"\1\2[REDACTED]\2", code)
+              print(code[:35000])
