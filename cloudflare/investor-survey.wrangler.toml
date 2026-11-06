@@ -1,0 +1,7 @@
+name = "pk-investor-survey"
+main = "investor-survey-worker.mjs"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+[vars]
+ALLOWED_ORIGIN = "https://deals.propertykickstart.co.uk"
