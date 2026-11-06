@@ -3,5 +3,9 @@ main = "investor-survey-worker.mjs"
 compatibility_date = "2026-10-01"
 workers_dev = true
 
+[triggers]
+crons = ["*/15 * * * *"]
+
 [vars]
-ALLOWED_ORIGIN = "https://deals.propertykickstart.co.uk,https://test.propertykickstart.co.uk,https://pk-investor-survey-test.netlify.app"
+LIVE_ORIGIN = "https://survey.propertykickstart.co.uk"
+ALLOWED_ORIGIN = "https://survey.propertykickstart.co.uk,https://deals.propertykickstart.co.uk,https://test.propertykickstart.co.uk,https://pk-investor-survey-test.netlify.app"
