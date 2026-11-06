@@ -94,7 +94,7 @@ async function queryPages(db,headers,filter){
  const rows=[];let cursor;
  for(let n=0;n<100;n++){
   const r=await fetch(notion+"/databases/"+db+"/query",{method:"POST",headers,body:JSON.stringify({page_size:100,...(filter?{filter}:{}),...(cursor?{start_cursor:cursor}:{})})});
-  if(!r.ok)throw Error("Lookup unavailable");
+  if(!r.ok)throw Error("Lookup unavailable ("+r.status+")");
   const data=await r.json();rows.push(...data.results);if(!data.has_more)return rows;cursor=data.next_cursor;
  }
  throw Error("Lookup limit exceeded");
@@ -104,7 +104,7 @@ async function investorProperties(p,isTest,headers){
  let match={status:"TEST - not linked",relation:[]};
  if(!isTest){
   match={status:normalEmail(p.contact.email)?"Pending email match":"Anonymous",relation:[]};
-  if(normalEmail(p.contact.email))try{match=matchInvestor(p.contact.email,await queryPages(INVESTORS_DB,headers));}catch{}
+  if(normalEmail(p.contact.email))try{match=matchInvestor(p.contact.email,await queryPages(INVESTORS_DB,headers));}catch(e){console.error("survey_investor_lookup_status",e.message);}
  }
  return {"Survey year":{number:SURVEY_YEAR},...linkProperties(match)};
 }
