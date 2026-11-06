@@ -28,3 +28,24 @@ assert.ok(html.includes('https://privacy.propertykickstart.co.uk/'));
 assert.ok(html.includes('https://assessment.propertykickstart.co.uk/'));
 assert.ok(!html.includes('\\\\s@'));
 console.log('PASS: frontend syntax; landlord/non-landlord validation; valid/invalid email and mobile; anonymous and consent rules; duplicate choices and text limits; long Unicode JSON round-trip; privacy and assessment links.');
+
+const withProfessionals={...valid,answers:{...valid.answers,3:["Finding reliable professionals"]}};
+for(const followup of [undefined,{wantsToTell:false,selected:[],other:""},{wantsToTell:true,selected:[],other:""},{wantsToTell:true,selected:["Other"],other:""},{wantsToTell:true,selected:["Mortgage brokers","Surveyors and valuers","Other"],other:"ACT-900 TEST optional detail"}]){
+ assert.equal(validate({...withProfessionals,professional_followup:followup}),true);
+}
+for(const followup of [null,[],{wantsToTell:true,selected:["Unknown"],other:""},{wantsToTell:true,selected:["Mortgage brokers","Mortgage brokers"],other:""},{wantsToTell:true,selected:[],other:"x".repeat(501)}])assert.equal(validate({...withProfessionals,professional_followup:followup}),false);
+scope.payload={...valid,professional_followup:{wantsToTell:true,selected:["Other"],other:"stale"}};
+assert.equal(vm.runInContext('professionalData(payload)',scope),undefined);
+scope.payload={...withProfessionals,professional_followup:{wantsToTell:true,selected:["Mortgage brokers"],other:"stale"}};
+assert.equal(vm.runInContext('professionalData(payload).other',scope),"");
+const frontend=vm.createContext({document:{getElementById:()=>({})}});
+const script=html.match(/<script>([\s\S]*?)<\/script>/)[1].replace(/render\(\);\s*$/,'');
+vm.runInContext(script,frontend);
+vm.runInContext('a[3]=["Finding reliable professionals"];professionalFollowup.wantsToTell=true;professionalFollowup.selected=["Other"];professionalFollowup.other="";',frontend);
+assert.equal(vm.runInContext('professionalData().selected[0]',frontend),'Other');
+vm.runInContext('a[3]=["Assessing risks"]',frontend);
+assert.equal(vm.runInContext('professionalData()',frontend),undefined);
+vm.runInContext('resetFollowing(1)',frontend);
+assert.equal(vm.runInContext('professionalFollowup.wantsToTell',frontend),false);
+assert.equal(vm.runInContext('professionalFollowup.selected.length',frontend),0);
+console.log('PASS: optional professionals omitted/skipped/empty/Other; multiple choices; payload validation; stale parent/Other protection; branch-reset state.');
