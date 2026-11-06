@@ -59,3 +59,17 @@ These blocks prevent a Passed readiness claim. Do not convert mock tests into li
 
 Worker rollback: redeploy 6ad1461ee0eb4753f1de2236df5a755627cf7da6 (TEST behavior only). First-launch frontend rollback: unpublish production project; keep TEST site and stored data. Preserve new additive properties. Annual rollback later: restore previous root302 and edition configuration.
 Final release summary: pending; nothing deployed by this candidate preparation.
+
+## Staging readiness evidence, 6 November 2026
+
+- Isolated Netlify preview: https://pk-investor-survey-preview.netlify.app/2027/ ; project pk-investor-survey-preview. Initial deploy6aede111837f43046b770227 at b9bb21e. Only staging site created; no custom public domain/DNS attached.
+- Root HTTP302 /2027/, compatibility /survey/ HTTP302 /, privacy HTTP200, unknown path HTTP404; X-Frame-Options DENY confirmed. Friendly404 and privacy viewed in browser.
+- Full actual preview landlord submission saved response4102aad7d30e81cd9fd7e13c9dd080c3 with TESTtrue, year2027, Solicitors/Bookkeepers/Othertrue, Mortgagefalse, optional Other blank, marketingfalse, WhatsApp invitationtrue. Confirmation clean, Assessment CTA one box and targetblank. No messages sent.
+- Responsive QA and both Node suites passed in run42234037941 at a809aa1; screenshots retained as survey-responsive-evidence artifact. Widths320/375/768/1366: matching stacked contact fields, no horizontal overflow, wrapped single Assessment CTA, optional WhatsApp new-tab note and uninterested CTA omission.
+- Actual dedicated survey TEST backend deployed branch5b2d75d in run42232818393, then redacted diagnostic revision343381a in run42235613725. Public survey hostname remains unlaunched.
+- Controlled public-origin synthetic QA request saved but failed Investor relation. Redacted same-token upstream lookup returned HTTP404 in run42235613725. Database ID exists and Email type=email verified via connected Notion. Missing integration access is likely, not yet confirmed through connection settings.
+- Canonical blocker: https://app.notion.com/p/4102aad7d30e81b3afa1e19d2abbae60 . Keep launch held. Notion web settings need authentication; Microsoft sign-in route was declined and stopped. Existing connector cannot inspect/grant service connection access.
+- Controlled diagnostic responses4102aad7d30e81038143fe8f6956fe99 and4102aad7d30e814e9766df481279939b relabelled TESTtrue after capturing origin classification evidence; no investor relation or consent changed.
+- Diagnostic tail captured404 then its process did not exit; cancelled diagnostic run after evidence. Process-group cleanup fixed in candidate1843970; no production promotion. A cancelled run is not full release success.
+- Manifest additions since initial draft: .github/workflows/deploy-investor-survey-worker.yml (QA-only default and explicit diagnostic option), tests/investor-survey-browser.cjs, tests/survey-lookup-diagnostic.cjs. Public frontend remains byte-for-byte b9bb21e.
+- Supersedes earlier local-browser blocker: browser QA now passed through GitHub Actions. Investor read permission and real survey/assessment linkage remain OPEN, as do final release/registry reconciliation and approval. Do not mark READY.
