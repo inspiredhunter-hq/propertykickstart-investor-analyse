@@ -78,6 +78,7 @@ function questionProperties(p){
   "Q10 | Preferred support":option(a[9])
  };
  for(const i of [2,3,4,5,6,9])props["Q"+(i+1)+" | Other detail"]=text((a[i]==="Other"||Array.isArray(a[i])&&a[i].includes("Other"))?o[i]:"");
+ for(const name of PROFESSIONALS)props[name==="Other"?"Other professional selected":name]={checkbox:!!f?.selected.includes(name)};
  return props;
 }
 
