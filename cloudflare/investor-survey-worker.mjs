@@ -31,6 +31,13 @@ function validate(p){
  }
  if(a[0]==="No"&&a[5]==="I'm already acquiring properties")return false;
  if(Object.values(o).some(v=>typeof v!=="string"||v.length>500))return false;
+ const c=p.contact||{};
+ if(typeof c!=="object"||Array.isArray(c))return false;
+ if(["name","email","mobile"].some(k=>typeof(c[k]||"")!=="string"||(c[k]||"").length>200))return false;
+ if(c.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(c.email))return false;
+ if(c.mobile&&!/^\\+?[0-9 ()-]{7,25}$/.test(c.mobile))return false;
+ if(typeof c.emailMarketing!=="boolean"||typeof c.whatsappInvite!=="boolean")return false;
+ if(c.emailMarketing&&!c.email)return false;
  return true;
 }
 function rich(s){return [{text:{content:s.slice(0,1900)}}]}
@@ -61,7 +68,13 @@ export default {async fetch(request,env){
   "Investor interest":{rich_text:rich(a[10])},
   "Submission ID":{rich_text:rich(p.submission_id)},
   "Answers JSON":{rich_text:rich(JSON.stringify({answers:a,other:p.other||{}}))},
-  "Test response":{checkbox:true}
+  "Test response":{checkbox:true},
+  "Contact name":{rich_text:rich((p.contact.name||"").trim())},
+  "Contact email":{email:(p.contact.email||"").trim()||null},
+  "Mobile number":{phone_number:(p.contact.mobile||"").trim()||null},
+  "Email marketing consent":{checkbox:p.contact.emailMarketing},
+  "Email consent at":{date:p.contact.emailMarketing?{start:new Date().toISOString()}:null},
+  "WhatsApp invitation":{checkbox:p.contact.whatsappInvite}
  }};
  const result=await fetch(notion+"/pages",{method:"POST",headers:nh,body:JSON.stringify(body)});
  if(!result.ok)return reply({error:"Storage unavailable",stage:"notion_write",upstream_status:result.status},503);
