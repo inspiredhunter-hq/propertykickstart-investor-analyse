@@ -43,10 +43,11 @@ function validate(p){
 function rich(s){return [{text:{content:s.slice(0,1900)}}]}
 export default {async fetch(request,env){
  const origin=request.headers.get("Origin")||"";
- const allowed=env.ALLOWED_ORIGIN||"https://deals.propertykickstart.co.uk";
+ const allowedOrigins=(env.ALLOWED_ORIGIN||"https://deals.propertykickstart.co.uk").split(",").map(x=>x.trim());
+ const allowed=allowedOrigins.includes(origin)?origin:allowedOrigins[0];
  const headers={"Access-Control-Allow-Origin":allowed,"Access-Control-Allow-Headers":"content-type","Access-Control-Allow-Methods":"POST, OPTIONS","Vary":"Origin","Content-Type":"application/json"};
  const reply=(data,status)=>new Response(JSON.stringify(data),{status,headers});
- if(origin!==allowed)return reply({error:"Forbidden"},403);
+ if(!allowedOrigins.includes(origin))return reply({error:"Forbidden"},403);
  if(request.method==="OPTIONS")return reply({},200);
  if(request.method!=="POST")return reply({error:"Method not allowed"},405);
  if(Number(request.headers.get("content-length")||0)>14000)return reply({error:"Too large"},413);
