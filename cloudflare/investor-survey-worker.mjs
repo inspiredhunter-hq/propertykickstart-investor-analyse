@@ -44,13 +44,13 @@ export default {async fetch(request,env){
  if(request.method!=="POST")return reply({error:"Method not allowed"},405);
  if(Number(request.headers.get("content-length")||0)>14000)return reply({error:"Too large"},413);
  let p;try{p=await request.json()}catch{return reply({error:"Invalid JSON"},400)}
- if(p.website||!validate(p))return reply({error:"Invalid submission"},400);
- if(!env.NOTION_API_TOKEN)return reply({error:"Not configured"},503);
+ if(p.website||!validate(p))return reply({error:"Invalid submission",stage:"validation"},400);
+ if(!env.NOTION_API_TOKEN)return reply({error:"Not configured",stage:"configuration"},503);
  const nh={"Authorization":"Bearer "+env.NOTION_API_TOKEN,"Notion-Version":"2022-06-28","Content-Type":"application/json"};
  // Idempotency: check Submission ID before creating. Notion has no unique constraint;
  // parallel retries still require an external durable lock for strict exactly-once semantics.
  const q=await fetch(notion+"/databases/"+DB+"/query",{method:"POST",headers:nh,body:JSON.stringify({filter:{property:"Submission ID",rich_text:{equals:p.submission_id}},page_size:1})});
- if(!q.ok)return reply({error:"Storage unavailable"},503);
+ if(!q.ok)return reply({error:"Storage unavailable",stage:"notion_lookup",upstream_status:q.status},503);
  const existing=await q.json();
  if(existing.results?.length)return reply({saved:true,id:existing.results[0].id},200);
  const a=p.answers;
@@ -64,6 +64,6 @@ export default {async fetch(request,env){
   "Test response":{checkbox:true}
  }};
  const result=await fetch(notion+"/pages",{method:"POST",headers:nh,body:JSON.stringify(body)});
- if(!result.ok)return reply({error:"Storage unavailable"},503);
+ if(!result.ok)return reply({error:"Storage unavailable",stage:"notion_write",upstream_status:result.status},503);
  const data=await result.json();return reply({saved:true,id:data.id},200);
 }};
