@@ -34,13 +34,17 @@ function validate(p){
  const c=p.contact||{};
  if(typeof c!=="object"||Array.isArray(c))return false;
  if(["name","email","mobile"].some(k=>typeof(c[k]||"")!=="string"||(c[k]||"").length>200))return false;
- if(c.email&&!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(c.email))return false;
- if(c.mobile&&!/^\\+?[0-9 ()-]{7,25}$/.test(c.mobile))return false;
+ if(c.email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email))return false;
+ if(c.mobile&&!/^\+?[0-9 ()-]{7,25}$/.test(c.mobile))return false;
  if(typeof c.emailMarketing!=="boolean"||typeof c.whatsappInvite!=="boolean")return false;
  if(c.emailMarketing&&!c.email)return false;
  return true;
 }
-function rich(s){return [{text:{content:s.slice(0,1900)}}]}
+function rich(s){
+ const chunks=[];let chunk="";
+ for(const point of s){if(chunk.length+point.length>1900){chunks.push({text:{content:chunk}});chunk=""}chunk+=point}
+ chunks.push({text:{content:chunk}});return chunks;
+}
 export default {async fetch(request,env){
  const origin=request.headers.get("Origin")||"";
  const allowedOrigins=(env.ALLOWED_ORIGIN||"https://deals.propertykickstart.co.uk").split(",").map(x=>x.trim());
