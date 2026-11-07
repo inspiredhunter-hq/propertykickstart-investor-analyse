@@ -68,13 +68,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
+      - uses: actions/checkout@v4
       - name: Read Assessment source through existing Cloudflare connection
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: python
         run: |
-          import os, urllib.request, urllib.error, email, email.policy, json, re, hashlib
+          import os, urllib.request, urllib.error, email, email.policy, json, re, hashlib, pathlib
           token = os.environ.get("CF_TOKEN", "")
           account = os.environ.get("CF_ACCOUNT", "")
           if not token or not account:
@@ -100,9 +101,30 @@ jobs:
               name = part.get_filename() or part.get_param("name", header="content-disposition")
               if name and re.fullmatch(r"[A-Za-z0-9_.-]+\.mjs", name):
                   modules[name] = part.get_payload(decode=True).decode("utf-8")
+          target = pathlib.Path("/tmp/act900-current-act48")
+          target.mkdir(mode=0o700)
+          for name, code in modules.items():
+              if token in code or re.search(r"xkeysib-[A-Za-z0-9-]+|-----BEGIN .*PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9]+", code):
+                  raise SystemExit("Potential embedded credential; source not exported.")
+              (target/name).write_text(code)
           print("READ ONLY. No deployment, settings change, database write or message send.")
+          print("Complete source hashes:", json.dumps({name:hashlib.sha256(code.encode()).hexdigest() for name,code in modules.items()}))
+          for resource in ["settings", "deployments"]:
+              url = "https://api.cloudflare.com/client/v4/accounts/" + account + "/workers/scripts/pk-automation-staging/" + resource
+              request = urllib.request.Request(url, headers={"Authorization": "Bearer " + token}, method="GET")
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  result=json.load(response).get("result", {})
+              if resource=="settings":
+                  bindings=result.get("bindings", [])
+                  print("Current binding names/types:", json.dumps([{"name":x.get("name"),"type":x.get("type")} for x in bindings]))
+                  names={"QUIZ_INTAKE_ENABLED","QUIZ_CONSUMER_ENABLED","BOOKING_SYNC_ENABLED","HMO_ENABLED","ASSESSMENT_INVESTOR_LINK_ENABLED"}
+                  print("Current operational flags:", json.dumps({x["name"]:x.get("text") for x in bindings if x.get("name") in names and x.get("type")=="plain_text"}))
+                  print("Current compatibility:", json.dumps({k:result.get(k) for k in ["compatibility_date","compatibility_flags"]}))
+              else:
+                  print("Current deployment identity:", json.dumps(result))
+
           print("Modules:", json.dumps(sorted(modules)))
-          selected = ["quiz-consumer.mjs", "quiz-pipeline.mjs", "quiz-live-runtime.mjs", "notion-client.mjs", "lead-mapping.mjs"]
+          selected = ["quiz-consumer.mjs", "quiz-pipeline.mjs", "quiz-live-runtime.mjs", "notion-client.mjs", "lead-mapping.mjs", "delivery-engine.mjs"]
           for name in selected:
               code = modules.get(name)
               if code is None:
@@ -116,3 +138,27 @@ jobs:
               # Mask hard-coded string assignments to credential-like names.
               code = re.sub(r"(?i)((?:[A-Za-z0-9_]*(?:token|secret|password|api_key)[A-Za-z0-9_]*)\s*[:=]\s*)([\"'])([^\r\n]*?)\2", r"\1\2[REDACTED]\2", code)
               print(code[:35000])
+
+      - name: Test candidate against fresh deployed pipeline without provider writes
+        run: |
+          node --test tests/assessment-investor-link.mjs
+          python scripts/prepare-assessment-link-patch.py /tmp/act900-current-act48
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {processQuizSubmission} from '/tmp/act900-current-act48/quiz-pipeline.mjs';
+          import {withInvestorProfileLink} from '/tmp/act900-current-act48/assessment-investor-link.mjs';
+          let writes=0, queries=0, row={state:'pending',receivedAt:'2026-11-07T06:00:00Z',prepared:null}, completed;
+          // Load existing mapping schema and exercise the actual deployed pipeline with a validated fixture.
+          const {leadSchema}=await import('/tmp/act900-current-act48/qa-schema.mjs');
+          const option=n=>leadSchema[n].options[0].name;
+          const evidence={experience:option('Experience'),primaryGoal:option('Primary Goal'),timeline:option('Timeline'),budget:option('Budget'),financeMethod:option('Finance Method'),financeInPlace:option('Finance in Place'),propertyOwnership:option('Property Ownership'),handsOnPreference:option('Hands-On Preference'),mobile:''};
+          row.prepared={contractVersion:'fixture-only',contact:{email:'qa@example.invalid',fullName:'Synthetic QA',firstName:'Synthetic'},evidence,derived:{legacyInvestorType:option('Investor Type'),readinessScore:15,cashBuyer:false,financeReady:false,handsOffFlag:true,sub50k:false},answers:{outcome:'Fixture',priorities:'Fixture',preferred_investment_areas:[],blockers:[]}};
+          const base={findContactIds:async()=>[],writeLead:async plan=>{writes++;assert.equal(plan.properties['Investor Profile'].relation[0].id,'4102aad7-d30e-81a9-81fb-c3d07d618628');assert.equal(plan.properties['Readiness Score'].number,15);return {pageId:'4102aad7-d30e-8170-95df-df6993b6fe17'};}};
+          const notion=withInvestorProfileLink({notion:base,token:'fixture-only',investorDataSourceId:'0c8ed56c-8c78-40ba-9f44-b8e8c97d0aec',fetchImpl:async()=>{queries++;return new Response(JSON.stringify({results:[{id:'4102aad7-d30e-81a9-81fb-c3d07d618628',properties:{Email:{email:'qa@example.invalid'}}}],has_more:false}));}});
+          const store={load:async()=>row,claim:async()=>true,lockContact:async()=>true,hold:async()=>{throw Error('Unexpected hold');},complete:async(id,result)=>{completed=result;row={...row,state:'synced',pageId:result.pageId,notifications:result.notifications};},refreshRun:async()=> 'complete'};
+          const args={submissionId:'fixture-only',store,notion,schema:leadSchema,notificationPlan:async()=>[],send:async()=>{throw Error('No provider send permitted');},ledger:{}};
+          assert.equal((await processQuizSubmission(args)).state,'synced');
+          assert.equal((await processQuizSubmission(args)).state,'synced');
+          assert.equal(writes,1);assert.equal(queries,1);assert.equal(completed.notifications.length,0);
+          console.log('PASS actual deployed pipeline + link decorator; retry does not repeat lead write; provider writes/sends mocked.');
+          JS
