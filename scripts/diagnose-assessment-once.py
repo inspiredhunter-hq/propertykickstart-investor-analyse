@@ -33,21 +33,23 @@ def source():
 def hashes(files): return {n:hashlib.sha256(b).hexdigest() for n,b in sorted(files.items())}
 before=source(); settings=get_json("/settings"); schedules=get_json("/schedules"); deployments=get_json("/deployments")
 active=deployments["deployments"][0]
-if active["versions"]!=[{"version_id":"b060deaf-5e12-4ed2-b182-e592a253440d","percentage":100}]: raise SystemExit("Reinspect changed deployment")
-if len(before)!=30 or hashes(before).get("assessment-investor-link.mjs")!="28562c07bb1fbfe003882aff5693487813813be6043d5b7830354e1f7276cfcc" or hashes(before).get("act48-with-hmo.mjs")!="f9b22c908721d8d0f68017f192d2da7d01cbb8fb43324f0c67c8ba8cc60d3c6c": raise SystemExit("Unexpected source")
+if active["versions"]!=[{"version_id":"47121c9e-a48e-4643-b14d-868f0e7a31e9","percentage":100}]: raise SystemExit("Reinspect changed deployment")
+if len(before)!=31 or hashes(before).get("act900-diagnostic.mjs")!="f5400bf7b5ddb444affdfb1ca6f75f409ce95e0e8231ff56f17b803987ecc3a0": raise SystemExit("Unexpected diagnostic source")
 prepared=dict(before)
+del prepared["act900-diagnostic.mjs"]
 entry=before["act48-with-hmo.mjs"].decode()
-if entry.count("export default")!=1: raise SystemExit("Unexpected export")
-entry="import {runDiagnostic} from './act900-diagnostic.mjs';\n"+entry.replace("export default","const original =")
-entry+="\nexport default {...original,scheduled(event,env,ctx){ctx.waitUntil(runDiagnostic(env));return original.scheduled(event,env,ctx);}};\n"
+prefix="import {runDiagnostic} from './act900-diagnostic.mjs';\n"
+suffix="\nexport default {...original,scheduled(event,env,ctx){ctx.waitUntil(runDiagnostic(env));return original.scheduled(event,env,ctx);}};\n"
+if not entry.startswith(prefix) or not entry.endswith(suffix): raise SystemExit("Unexpected diagnostic wrapper")
+entry=entry[len(prefix):-len(suffix)].replace("const original =","export default",1)
 prepared["act48-with-hmo.mjs"]=entry.encode()
-prepared["act900-diagnostic.mjs"]=pathlib.Path("cloudflare/act900-diagnostic.mjs").read_bytes()
+if hashes(prepared).get("act48-with-hmo.mjs")!="f9b22c908721d8d0f68017f192d2da7d01cbb8fb43324f0c67c8ba8cc60d3c6c": raise SystemExit("Original entrypoint mismatch")
 import tempfile
 with tempfile.TemporaryDirectory() as tmp:
     for name,b in prepared.items():
         f=pathlib.Path(tmp)/name;f.write_bytes(b)
         subprocess.run(["node","--check",str(f)],check=True,stdout=subprocess.DEVNULL)
-print("Known synthetic recovery only; existing matcher, no target investor ID selected, no notification replay;29 original modules unchanged.")
+print("Diagnostic hook removed; original entrypoint hash restored. All29 other modules unchanged.")
 bindings=settings.get("bindings",[])
 names={b["name"] for b in bindings}
 required={"AUTOMATION_DB","NOTION_API_KEY","BREVO_API_KEY","TURNSTILE_SECRET_KEY","QUIZ_INTAKE_ENABLED","QUIZ_CONSUMER_ENABLED","BOOKING_SYNC_ENABLED"}
@@ -56,7 +58,7 @@ flags={b["name"]:b.get("text") for b in bindings if b.get("type")=="plain_text"}
 if any(flags.get(n)!="true" for n in ["QUIZ_INTAKE_ENABLED","QUIZ_CONSUMER_ENABLED","BOOKING_SYNC_ENABLED"]) or flags.get("HMO_ENABLED")!="false":
     raise SystemExit("Existing operational state changed.")
 if settings.get("compatibility_date")!="2026-10-21": raise SystemExit("Compatibility differs.")
-print("Preflight PASS: exact deployed source,31 syntax-valid modules, original bindings/flags; no mutation yet.")
+print("Preflight PASS: exact deployed source,30 syntax-valid modules, original bindings/flags; no mutation yet.")
 if not args.apply: raise SystemExit(0)
 # API /content replaces source while preserving config/metadata. No secrets/settings API writes.
 boundary="act900-"+uuid.uuid4().hex
@@ -79,7 +81,7 @@ for k in ["bindings","compatibility_date","compatibility_flags"]:
     if post_settings.get(k)!=settings.get(k): raise SystemExit("Settings drift: "+k+". Inspect/rollback.")
 if post_schedules!=schedules: raise SystemExit("Schedule drift. Inspect/rollback.")
 post_deploy=get_json("/deployments")["deployments"][0]
-print("PASS exact 31-module readback; all configuration preserved.")
+print("PASS exact 30-module readback; all configuration preserved.")
 print("New deployment:",json.dumps(post_deploy))
 print("Source hashes:",json.dumps(hashes(after)))
 print("Live identity match still requires controlled actual Assessment and two-way Notion readback.")
