@@ -144,6 +144,9 @@ jobs:
               print(code[:35000])
 
       - name: Test candidate against fresh deployed pipeline without provider writes
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           node --test tests/assessment-investor-link.mjs
           python scripts/prepare-assessment-link-patch.py /tmp/act900-current-act48
