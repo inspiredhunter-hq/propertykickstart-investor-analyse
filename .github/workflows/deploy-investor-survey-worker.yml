@@ -23,7 +23,7 @@ on:
         type: boolean
         default: false
       diagnose_assessment_once:
-        description: Remove completed synthetic diagnostic; preserve existing Assessment fix
+        description: Recover known synthetic Assessment through existing automatic matcher; no notifications
         type: boolean
         default: false
 permissions:
