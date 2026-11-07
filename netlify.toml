@@ -2,6 +2,9 @@
   publish = "test"
   command = ""
 
+[context."release/survey-live-20261106"]
+  publish = "production"
+
 [[headers]]
   for = "/*"
   [headers.values]
