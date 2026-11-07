@@ -23,7 +23,7 @@ on:
         type: boolean
         default: false
       diagnose_assessment_once:
-        description: Deploy bounded synthetic-only lookup diagnostic without sending messages
+        description: Remove completed synthetic diagnostic; preserve existing Assessment fix
         type: boolean
         default: false
 permissions:
@@ -216,7 +216,7 @@ jobs:
           print("Query acknowledged:",result.get("success"))
           print("No deployment, settings change, database write or message send.")
 
-  diagnose-assessment-once:
+  cleanup-assessment-diagnostic:
     if: ${{ inputs.diagnose_assessment_once }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
