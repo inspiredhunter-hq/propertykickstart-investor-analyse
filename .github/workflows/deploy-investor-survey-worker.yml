@@ -22,11 +22,15 @@ on:
         description: Read redacted Assessment lookup error codes only; no deployment
         type: boolean
         default: false
+      diagnose_assessment_once:
+        description: Deploy bounded synthetic-only lookup diagnostic without sending messages
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   deploy:
-    if: ${{ !inputs.inspect_assessment && !inputs.apply_assessment && !inputs.read_assessment_logs }}
+    if: ${{ !inputs.inspect_assessment && !inputs.apply_assessment && !inputs.read_assessment_logs && !inputs.diagnose_assessment_once }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -211,3 +215,17 @@ jobs:
           print("Stable redacted lookup codes:",json.dumps(safe))
           print("Query acknowledged:",result.get("success"))
           print("No deployment, settings change, database write or message send.")
+
+  diagnose-assessment-once:
+    if: ${{ inputs.diagnose_assessment_once }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify diagnostic syntax
+        run: node --check cloudflare/act900-diagnostic.mjs
+      - name: Source-only synthetic diagnostic with preserved configuration
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python scripts/diagnose-assessment-once.py /tmp/unused --apply
