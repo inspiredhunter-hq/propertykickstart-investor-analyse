@@ -85,11 +85,20 @@ function questionProperties(p){
 const SURVEY_YEAR=2027;
 const INVESTORS_DB="ffd4d0428cc64de2b6602e60dafa8a2f";
 const normalEmail=v=>String(v||"").trim().toLowerCase();
+const LEADS_DB="32b2aad7d30e8065b6f7e091bb0370d4";
 function matchInvestor(email,rows){
  if(!normalEmail(email))return {status:"Anonymous",relation:[]};
  const matches=rows.filter(r=>normalEmail(r.properties?.Email?.email)===normalEmail(email));
  return matches.length===1?{status:"Linked",relation:[{id:matches[0].id}]}:{status:matches.length?"Ambiguous email":"Pending email match",relation:[]};
 }
+// BUG-46: Assessment (PK Leads) matching. Exact trimmed, case-normalised email; plus-address tags preserved.
+// Writes only to the survey row: never creates/promotes investors or touches lead consent/CRM fields.
+function matchLead(email,rows){
+ if(!normalEmail(email))return {status:"Anonymous",relation:[]};
+ const matches=rows.filter(r=>normalEmail(r.properties?.Email?.email)===normalEmail(email));
+ return matches.length===1?{status:"Linked",relation:[{id:matches[0].id}]}:{status:matches.length?"Ambiguous email":"Pending Assessment match",relation:[]};
+}
+function leadLinkProperties(match){return {"Assessment lead":{relation:match.relation},"Assessment link status":{select:{name:match.status}}};}
 async function queryPages(db,headers,filter){
  const rows=[];let cursor;
  for(let n=0;n<100;n++){
@@ -101,26 +110,36 @@ async function queryPages(db,headers,filter){
 }
 function linkProperties(match){return {"Investor":{relation:match.relation},"Investor link status":{select:{name:match.status}}};}
 async function investorProperties(p,isTest,headers){
- let match={status:"TEST - not linked",relation:[]};
+ let match={status:"TEST - not linked",relation:[]},lead={status:"TEST - not linked",relation:[]};
  if(!isTest){
-  match={status:normalEmail(p.contact.email)?"Pending email match":"Anonymous",relation:[]};
-  if(normalEmail(p.contact.email))try{match=matchInvestor(p.contact.email,await queryPages(INVESTORS_DB,headers));}catch(e){console.error("survey_investor_lookup_status",e.message);}
+  const has=!!normalEmail(p.contact.email);
+  match={status:has?"Pending email match":"Anonymous",relation:[]};
+  lead={status:has?"Pending Assessment match":"Anonymous",relation:[]};
+  if(has){
+   try{match=matchInvestor(p.contact.email,await queryPages(INVESTORS_DB,headers));}catch(e){console.error("survey_investor_lookup_status",e.message);}
+   try{lead=matchLead(p.contact.email,await queryPages(LEADS_DB,headers));}catch(e){console.error("survey_lead_lookup_status",e.message);}
+  }
  }
- return {"Survey year":{number:SURVEY_YEAR},...linkProperties(match)};
+ return {"Survey year":{number:SURVEY_YEAR},...linkProperties(match),...leadLinkProperties(lead)};
 }
 async function reconcileInvestors(env){
  if(!env.NOTION_API_TOKEN)return;
  const headers={Authorization:"Bearer "+env.NOTION_API_TOKEN,"Notion-Version":"2022-06-28","Content-Type":"application/json"};
- try{
-  const rows=await queryPages(DB,headers,{and:[{property:"Test response",checkbox:{equals:false}},{property:"Investor",relation:{is_empty:true}},{property:"Contact email",email:{is_not_empty:true}}]});
-  if(!rows.length)return;
-  const investors=await queryPages(INVESTORS_DB,headers);
+ const sweeps=[
+  {relation:"Investor",db:INVESTORS_DB,match:matchInvestor,props:linkProperties},
+  {relation:"Assessment lead",db:LEADS_DB,match:matchLead,props:leadLinkProperties}
+ ];
+ // Each sweep is independent so a failure in one (e.g. missing database access) never blocks the other.
+ for(const sweep of sweeps)try{
+  const rows=await queryPages(DB,headers,{and:[{property:"Test response",checkbox:{equals:false}},{property:sweep.relation,relation:{is_empty:true}},{property:"Contact email",email:{is_not_empty:true}}]});
+  if(!rows.length)continue;
+  const targets=await queryPages(sweep.db,headers);
   for(const row of rows){
-   const match=matchInvestor(row.properties?.["Contact email"]?.email,investors);
-   const r=await fetch(notion+"/pages/"+row.id,{method:"PATCH",headers,body:JSON.stringify({properties:linkProperties(match)})});
+   const match=sweep.match(row.properties?.["Contact email"]?.email,targets);
+   const r=await fetch(notion+"/pages/"+row.id,{method:"PATCH",headers,body:JSON.stringify({properties:sweep.props(match)})});
    if(!r.ok)throw Error("Reconciliation unavailable");
   }
- }catch{console.error("Survey investor reconciliation incomplete; retry scheduled");}
+ }catch{console.error("Survey "+sweep.relation+" reconciliation incomplete; retry scheduled");}
 }
 
 export default {scheduled(event,env,ctx){ctx.waitUntil(reconcileInvestors(env));},async fetch(request,env){
