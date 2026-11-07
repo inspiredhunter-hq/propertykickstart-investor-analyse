@@ -100,3 +100,16 @@ for(const p of [valid,withProfessionals,{...withProfessionals,professional_follo
 const stale=mapped({...valid,professional_followup:{wantsToTell:true,selected:["Bookkeepers"],other:""}});
 assert.equal(stale.Bookkeepers.checkbox,false);
 console.log("PASS: each professional checkbox matches only its selection; omitted, empty and stale follow-up remains unticked.");
+
+
+const rankedProfessionals={...valid,answers:{...valid.answers,6:["Finding reliable local professionals","Assessing financial performance and returns"]},professional_followup:{wantsToTell:true,selected:["Bookkeepers"],other:""}};
+assert.equal(validate(rankedProfessionals),true);
+assert.equal(mapped(rankedProfessionals)["Q4 | Professional follow-up"].select.name,"Yes");
+assert.equal(mapped(rankedProfessionals).Bookkeepers.checkbox,true);
+const rankedSecond={...rankedProfessionals,answers:{...rankedProfessionals.answers,6:["Assessing financial performance and returns","Finding reliable local professionals"]}};
+assert.equal(mapped(rankedSecond).Bookkeepers.checkbox,true);
+const rankedAbsent={...rankedProfessionals,answers:{...rankedProfessionals.answers,6:["Assessing financial performance and returns","Coordinating the purchase process"]}};
+assert.equal(mapped(rankedAbsent).Bookkeepers.checkbox,false);
+assert.match(html,/step===6&&v==="Finding reliable local professionals"/);
+assert.match(html,/if\(step===3\|\|step===6\)drawProfessionals\(\)/);
+console.log("PASS: BUG-47 ranked first/second professionals trigger, persisted fields and stale suppression.");
