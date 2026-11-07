@@ -33,21 +33,16 @@ def source():
 def hashes(files): return {n:hashlib.sha256(b).hexdigest() for n,b in sorted(files.items())}
 before=source(); settings=get_json("/settings"); schedules=get_json("/schedules"); deployments=get_json("/deployments")
 active=deployments["deployments"][0]
-if active["versions"]!=[{"version_id":"56b20f52-16f7-4a42-a6e2-ac73e9b6ea59","percentage":100}]: raise SystemExit("Reinspect changed deployment")
-if len(before)!=30 or hashes(before).get("assessment-investor-link.mjs")!="28562c07bb1fbfe003882aff5693487813813be6043d5b7830354e1f7276cfcc" or hashes(before).get("act48-with-hmo.mjs")!="f9b22c908721d8d0f68017f192d2da7d01cbb8fb43324f0c67c8ba8cc60d3c6c": raise SystemExit("Unexpected source")
+if active["versions"]!=[{"version_id":"5e94291b-374a-4aae-8185-f72de858935f","percentage":100}]: raise SystemExit("Reinspect changed deployment")
+if len(before)!=31 or hashes(before).get("act900-diagnostic.mjs")!="a94bcf8c2b6c32845d82982a57778ebd7ad7b3b43c3cb3c049454a484cb81974": raise SystemExit("Unexpected diagnostic source")
 prepared=dict(before)
-entry=before["act48-with-hmo.mjs"].decode()
-if entry.count("export default")!=1: raise SystemExit("Unexpected entrypoint export")
-entry="import {runDiagnostic} from './act900-diagnostic.mjs';\n"+entry.replace("export default","const original =")
-entry+="\nexport default {...original,scheduled(event,env,ctx){ctx.waitUntil(runDiagnostic(env));return original.scheduled(event,env,ctx);}};\n"
-prepared["act48-with-hmo.mjs"]=entry.encode()
 prepared["act900-diagnostic.mjs"]=pathlib.Path("cloudflare/act900-diagnostic.mjs").read_bytes()
 import tempfile
 with tempfile.TemporaryDirectory() as tmp:
     for name,b in prepared.items():
         f=pathlib.Path(tmp)/name;f.write_bytes(b)
         subprocess.run(["node","--check",str(f)],check=True,stdout=subprocess.DEVNULL)
-print("One-off synthetic diagnostic: 29 existing modules unchanged; no new public route; original handlers preserved.")
+print("Existing synthetic-only diagnostic: add connection name only; all other30 modules unchanged.")
 bindings=settings.get("bindings",[])
 names={b["name"] for b in bindings}
 required={"AUTOMATION_DB","NOTION_API_KEY","BREVO_API_KEY","TURNSTILE_SECRET_KEY","QUIZ_INTAKE_ENABLED","QUIZ_CONSUMER_ENABLED","BOOKING_SYNC_ENABLED"}
