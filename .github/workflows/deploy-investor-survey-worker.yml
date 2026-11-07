@@ -14,11 +14,15 @@ on:
         description: Read current Assessment Worker source only; no deployment or customer actions
         type: boolean
         default: false
+      apply_assessment:
+        description: Apply verified Assessment identity-link correction only; public survey launch excluded
+        type: boolean
+        default: false
 permissions:
   contents: read
 jobs:
   deploy:
-    if: ${{ !inputs.inspect_assessment }}
+    if: ${{ !inputs.inspect_assessment && !inputs.apply_assessment }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +68,7 @@ jobs:
         run: node tests/survey-lookup-diagnostic.cjs
 
   inspect-assessment:
-    if: ${{ inputs.inspect_assessment }}
+    if: ${{ inputs.inspect_assessment || inputs.apply_assessment }}
     runs-on: ubuntu-latest
     timeout-minutes: 3
     steps:
@@ -143,10 +147,12 @@ jobs:
         run: |
           node --test tests/assessment-investor-link.mjs
           python scripts/prepare-assessment-link-patch.py /tmp/act900-current-act48
+          python scripts/deploy-assessment-link.py /tmp/act900-current-act48
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import {processQuizSubmission} from '/tmp/act900-current-act48/quiz-pipeline.mjs';
           import {withInvestorProfileLink} from '/tmp/act900-current-act48/assessment-investor-link.mjs';
+          let sends=0; const claimed=new Set();
           let writes=0, queries=0, row={state:'pending',receivedAt:'2026-11-07T06:00:00Z',prepared:null}, completed;
           // Load existing mapping schema and exercise the actual deployed pipeline with a validated fixture.
           const {leadSchema}=await import('/tmp/act900-current-act48/qa-schema.mjs');
@@ -156,9 +162,16 @@ jobs:
           const base={findContactIds:async()=>[],writeLead:async plan=>{writes++;assert.equal(plan.properties['Investor Profile'].relation[0].id,'4102aad7-d30e-81a9-81fb-c3d07d618628');assert.equal(plan.properties['Readiness Score'].number,15);return {pageId:'4102aad7-d30e-8170-95df-df6993b6fe17'};}};
           const notion=withInvestorProfileLink({notion:base,token:'fixture-only',investorDataSourceId:'0c8ed56c-8c78-40ba-9f44-b8e8c97d0aec',fetchImpl:async()=>{queries++;return new Response(JSON.stringify({results:[{id:'4102aad7-d30e-81a9-81fb-c3d07d618628',properties:{Email:{email:'qa@example.invalid'}}}],has_more:false}));}});
           const store={load:async()=>row,claim:async()=>true,lockContact:async()=>true,hold:async()=>{throw Error('Unexpected hold');},complete:async(id,result)=>{completed=result;row={...row,state:'synced',pageId:result.pageId,notifications:result.notifications};},refreshRun:async()=> 'complete'};
-          const args={submissionId:'fixture-only',store,notion,schema:leadSchema,notificationPlan:async()=>[],send:async()=>{throw Error('No provider send permitted');},ledger:{}};
+          const args={submissionId:'fixture-only',store,notion,schema:leadSchema,notificationPlan:async()=>[{key:'fixture-summary',purpose:'summary',destinationRef:'fixture'},{key:'fixture-team',purpose:'team',destinationRef:'fixture'}],send:async()=>{sends++;return {accepted:true,messageId:'fixture-message-'+sends};},ledger:{claim:async key=>{if(claimed.has(key))return false;claimed.add(key);return true;},finish:async()=>{}}};
           assert.equal((await processQuizSubmission(args)).state,'synced');
           assert.equal((await processQuizSubmission(args)).state,'synced');
-          assert.equal(writes,1);assert.equal(queries,1);assert.equal(completed.notifications.length,0);
-          console.log('PASS actual deployed pipeline + link decorator; retry does not repeat lead write; provider writes/sends mocked.');
+          assert.equal(writes,1);assert.equal(queries,1);assert.equal(completed.notifications.length,2);assert.equal(sends,2);
+          console.log('PASS actual deployed pipeline + link decorator; retry does not repeat lead write or either notification; provider writes/sends mocked.');
           JS
+
+      - name: Apply narrow Assessment correction and verify readback
+        if: ${{ inputs.apply_assessment }}
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: python scripts/deploy-assessment-link.py /tmp/act900-current-act48 --apply

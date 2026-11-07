@@ -39,7 +39,10 @@ export function withInvestorProfileLink({notion, token, investorDataSourceId, fe
     if (plan.state !== 'ready') throw Error('notion_write_not_ready');
     const email = key(plan.properties?.Email?.email);
     if (!email) throw Error('notion_investor_email_required');
-    let existing = [];
+    if (!['create','update'].includes(plan.operation) || (plan.operation === 'update' && !uuid.test(plan.pageId ?? ''))) throw Error('notion_invalid_operation');
+    let existing = [], matches;
+    const properties = {...plan.properties};
+    try {
     if (plan.operation === 'update') {
       if (!uuid.test(plan.pageId ?? '')) throw Error('notion_invalid_operation');
       const page = await call('pages/' + plan.pageId);
@@ -47,8 +50,13 @@ export function withInvestorProfileLink({notion, token, investorDataSourceId, fe
       if (relation?.type !== 'relation' || !Array.isArray(relation.relation) || relation.has_more === true || relation.relation.some(r => !uuid.test(r.id ?? ''))) throw Error('notion_investor_relation_unavailable');
       existing = relation.relation.map(r => r.id);
     } else if (plan.operation !== 'create') throw Error('notion_invalid_operation');
-    const matches = await findInvestors(email);
-    const properties = {...plan.properties};
+    matches = await findInvestors(email);
+    } catch (error) {
+      // Association is enrichment: a read failure must not lose an otherwise valid Assessment.
+      properties['Contact Match Review'] = {checkbox: true};
+      console.warn('assessment_investor_link_review', /^notion_investor_[a-z_0-9]+$/.test(error?.message ?? '') ? error.message : 'read_unavailable');
+      return notion.writeLead({...plan, properties});
+    }
     // Identity matching does not promote, qualify, overwrite an existing relation or change consent.
     if (matches.length > 1 || existing.length > 1 || (matches.length === 1 && existing.length === 1 && idKey(matches[0]) !== idKey(existing[0]))) {
       properties['Contact Match Review'] = {checkbox: true};
