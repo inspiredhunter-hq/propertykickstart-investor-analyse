@@ -17,7 +17,7 @@ const sets=[
 ];
 const PROFESSIONALS=["Mortgage brokers","Solicitors and conveyancers","Accountants and tax specialists","Surveyors and valuers","Insurers","Builders and project managers","Letting agents and property managers","Bookkeepers","Financial advisers (where relevant)","Specialist trust or estate professionals (where relevant)","Other"];
 function professionalData(p){
- if(!p.answers?.[3]?.includes("Finding reliable professionals"))return undefined;
+ if(!(p.answers?.[3]?.includes("Finding reliable professionals")||p.answers?.[6]?.includes("Finding reliable local professionals")))return undefined;
  const f=p.professional_followup;
  return f?.wantsToTell===true?{wantsToTell:true,selected:f.selected,other:f.selected.includes("Other")?f.other:""}:undefined;
 }
