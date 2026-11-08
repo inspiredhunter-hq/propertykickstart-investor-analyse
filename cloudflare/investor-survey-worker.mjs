@@ -59,6 +59,7 @@ function rich(s){
 function questionProperties(p){
  const a=p.answers||{},o=p.other||{},f=professionalData(p);
  const option=v=>v?{select:{name:v.replaceAll(",","")}}:{select:null};
+ const supportOption=v=>option(v&&v!=="Other"?v+".":v);
  const text=v=>({rich_text:rich(v||"")});
  const props={
  "Q2 | Property plans":option(a[1]),
@@ -76,7 +77,7 @@ function questionProperties(p){
  "Q8 | Support valued - second priority":option(a[7]?.[1]),
  "Q9 | What has not worked":text(a[8]),
  "Q10 | What would make it easier":text(a[9]),
- "Q11 | Preferred support":option(a[10])
+ "Q11 | Preferred support":supportOption(a[10])
  };
  for(const i of [3,4,5,6,7,10])props["Q"+(i+1)+" | Other detail"]=text((a[i]==="Other"||Array.isArray(a[i])&&a[i].includes("Other"))?o[i]:"");
  for(const name of PROFESSIONALS)props[name==="Other"?"Other professional selected":name]={checkbox:!!f?.selected.includes(name)};
