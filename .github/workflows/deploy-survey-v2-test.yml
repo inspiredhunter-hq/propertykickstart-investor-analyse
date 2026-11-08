@@ -1,0 +1,31 @@
+name: Deploy PK Investor Survey V2 TEST Worker
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-test-only:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/feature/2027-survey-v2-review'
+    environment: survey-v2-test
+    steps:
+      - name: Check out isolated V2 review branch
+        uses: actions/checkout@v4
+        with:
+          ref: feature/2027-survey-v2-review
+          persist-credentials: false
+      - name: Verify TEST-only deployment target
+        run: |
+          grep -Fx 'name = "pk-investor-survey-v2-test"' cloudflare/wrangler.survey-v2-test.toml
+          grep -Fx 'workers_dev = true' cloudflare/wrangler.survey-v2-test.toml
+          grep -F 'https://pk-investor-survey-v2-test.propertykickstartuk.workers.dev' test/survey/index.html
+      - name: Deploy isolated V2 TEST Worker
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: cloudflare
+          command: deploy --config wrangler.survey-v2-test.toml
