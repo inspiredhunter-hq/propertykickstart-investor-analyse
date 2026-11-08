@@ -58,7 +58,7 @@ function rich(s){
 
 function questionProperties(p){
  const a=p.answers||{},o=p.other||{},f=professionalData(p);
- const option=v=>v?{select:{name:v.replaceAll(",","").replace(/\\.$/,"")}}:{select:null};
+ const option=v=>v?{select:{name:v.replaceAll(",","").replace(/[.]$/,"")}}:{select:null};
  const text=v=>({rich_text:rich(v||"")});
  const props={
  "Q2 | Property plans":option(a[1]),
