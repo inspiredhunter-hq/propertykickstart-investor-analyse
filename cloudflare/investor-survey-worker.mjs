@@ -59,7 +59,15 @@ function rich(s){
 function questionProperties(p){
  const a=p.answers||{},o=p.other||{},f=professionalData(p);
  const option=v=>v?{select:{name:v.replaceAll(",","")}}:{select:null};
- const supportOption=v=>option(v&&v!=="Other"?v+".":v);
+ const supportNames={
+ "A fully managed service, with most of the process handled for me":"A fully managed service with most of the process handled for me.",
+ "Personal support with specific parts of the process":"Personal support with specific parts of the process.",
+ "Access to suitable properties, with me managing the acquisition":"Access to suitable properties with me managing the acquisition.",
+ "Tools and resources to help me manage the process independently":"Tools and resources to help me manage the process independently.",
+ "I wouldn't need additional support":"I wouldn't need additional support.",
+ "Other":"Other"
+ };
+ const supportOption=v=>option(supportNames[v]);
  const text=v=>({rich_text:rich(v||"")});
  const props={
  "Q2 | Property plans":option(a[1]),
