@@ -55,3 +55,12 @@ Date: 9 November 2026. Status: PARTIAL PASS — existing evidence reviewed; no b
 - Screenshot confirms Q8 'Finding reliable local professionals' selected as second-ranked priority, optional follow-up shown, corrected wording and compact mobile checklist.
 - User confirmed selecting a professional permits Continue, and unticking the optional box permits skipping the follow-up.
 - Q8 professional follow-up display, selection and skip paths: **PASS**. No further repeat of these paths needed.
+
+## Final functional acceptance update — 9 November 2026
+- User confirmed Q8 selected-professional and unticked-optional paths both allow Continue: **PASS**. Screenshot shows Q8 professional follow-up, corrected wording and ranked choice.
+- User supplied screenshot of V2 Q2 with Q1 = No, showing four first-time-investor options: **PASS** for displayed branch.
+- User confirmed back navigation and 'Other' responses work: **PASS (user-observed)**.
+- Second downloaded TEST JSON (created 2026-11-09T00:50:24.694Z) confirms Q1 = No, Q2 = first investment property, Q9 and Q10 absent/blank, Q11 and Q12 present, and optional contact preferences captured: **PASS** for optional text progression and export.
+- All specifically requested functional checks now pass based on screenshots, downloaded exports and user confirmation. No need to ask for repeat survey testing.
+- **Release caveat:** JSON exports report `saved_to_notion:false`. The live production submission/storage integration must be separately assessed before any production rollout; export-only capture must not be described as successful server submission. No production release approved.
+- Do not commit raw JSON evidence or personally identifying contact fields.
