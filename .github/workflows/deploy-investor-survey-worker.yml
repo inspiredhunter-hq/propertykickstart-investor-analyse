@@ -10,6 +10,10 @@ on:
         description: Run controlled synthetic investor lookup diagnostic after TEST backend deployment
         type: boolean
         default: false
+      verify_brevo_sync:
+        description: ACT-832 read-only verification of the prepared Brevo contact sync (no deploy, no writes)
+        type: boolean
+        default: false
       inspect_assessment:
         description: Read current Assessment Worker source only; no deployment or customer actions
         type: boolean
@@ -30,7 +34,7 @@ permissions:
   contents: read
 jobs:
   deploy:
-    if: ${{ !inputs.inspect_assessment && !inputs.apply_assessment && !inputs.read_assessment_logs && !inputs.diagnose_assessment_once }}
+    if: ${{ !inputs.verify_brevo_sync && !inputs.inspect_assessment && !inputs.apply_assessment && !inputs.read_assessment_logs && !inputs.diagnose_assessment_once }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -233,3 +237,51 @@ jobs:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: python scripts/diagnose-assessment-once.py /tmp/unused --apply
+
+  verify-brevo-sync:
+    if: ${{ inputs.verify_brevo_sync }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download live source, prepare candidate, verify (READ ONLY; no deploy, provider write or message)
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          mkdir -p /tmp/live
+          python - <<'PY'
+          import os, urllib.request, email, email.policy, pathlib
+          req=urllib.request.Request("https://api.cloudflare.com/client/v4/accounts/"+os.environ["CF_ACCOUNT"]+"/workers/scripts/pk-automation-staging/content/v2",headers={"Authorization":"Bearer "+os.environ["CF_TOKEN"]})
+          with urllib.request.urlopen(req,timeout=40) as r: raw=r.read(3000001); ct=r.headers.get("Content-Type","")
+          m=email.message_from_bytes(("Content-Type: "+ct+"\r\nMIME-Version: 1.0\r\n\r\n").encode()+raw,policy=email.policy.default)
+          n=0
+          for part in m.iter_parts():
+              name=part.get_filename() or part.get_param("name",header="content-disposition")
+              if name and pathlib.PurePosixPath(name).name==name and name.endswith(".mjs"):
+                  pathlib.Path("/tmp/live",name).write_bytes(part.get_payload(decode=True)); n+=1
+          print("Downloaded modules:",n)
+          PY
+          node --test tests/assessment-brevo-contact.mjs tests/assessment-investor-link.mjs
+          mkdir /tmp/candidate && cp /tmp/live/*.mjs /tmp/candidate/
+          python scripts/prepare-assessment-brevo-patch.py /tmp/candidate --expected-runtime-sha256 24bc3bac1a3087e3eae918d8a37d112bee1d40007245f226d0467029929245f5
+          for f in /tmp/candidate/*.mjs; do node --check "$f"; done
+          python scripts/deploy-assessment-brevo.py /tmp/candidate
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import {processQuizSubmission} from '/tmp/candidate/quiz-pipeline.mjs';
+          import {withBrevoContactSync} from '/tmp/candidate/assessment-brevo-contact.mjs';
+          import {leadSchema} from '/tmp/candidate/qa-schema.mjs';
+          const option=n=>leadSchema[n].options[0].name;
+          const evidence={experience:option('Experience'),primaryGoal:option('Primary Goal'),timeline:option('Timeline'),budget:option('Budget'),financeMethod:option('Finance Method'),financeInPlace:option('Finance in Place'),propertyOwnership:option('Property Ownership'),handsOnPreference:option('Hands-On Preference'),mobile:'',consentGiven:true,consentTextVersion:'quiz-v1.5-2026-10-07'};
+          let row={state:'pending',receivedAt:'2026-11-09T12:00:00Z',prepared:{contractVersion:'fixture-only',contact:{email:'qa@example.invalid',fullName:'Synthetic QA',firstName:'Synthetic'},evidence,derived:{legacyInvestorType:option('Investor Type'),readinessScore:15,cashBuyer:false,financeReady:false,handsOffFlag:true,sub50k:false},answers:{outcome:'Fixture',priorities:'Fixture',preferred_investment_areas:[],blockers:[]}}};
+          let writes=0, brevo=[], sends=0, claimed=new Set();
+          const base={findContactIds:async()=>[],writeLead:async()=>{writes++;return {pageId:'4102aad7-d30e-8170-95df-df6993b6fe17'};}};
+          const notion=withBrevoContactSync({notion:base,apiKey:'fixture-only',listId:34,fetchImpl:async(u,o)=>{brevo.push(JSON.parse(o.body));return new Response(null,{status:201});}});
+          const store={load:async()=>row,claim:async()=>true,lockContact:async()=>true,hold:async()=>{throw Error('hold');},complete:async(id,r)=>{row={...row,state:'synced',pageId:r.pageId,notifications:r.notifications};},refreshRun:async()=>'complete'};
+          const args={submissionId:'fixture-only',store,notion,schema:leadSchema,notificationPlan:async()=>[{key:'k1',purpose:'summary',destinationRef:'fixture'}],send:async()=>{sends++;return {accepted:true,messageId:'m'+sends};},ledger:{claim:async k=>{if(claimed.has(k))return false;claimed.add(k);return true;},finish:async()=>{}}};
+          assert.equal((await processQuizSubmission(args)).state,'synced');
+          assert.equal((await processQuizSubmission(args)).state,'synced');
+          assert.equal(writes,1); assert.equal(brevo.length,1); assert.deepEqual(brevo[0].listIds,[34]); assert.equal(brevo[0].attributes.ASSESSMENT_RESPONSE_ID,'4102aad7-d30e-8170-95df-df6993b6fe17'); assert.equal(sends,1);
+          console.log('PASS actual live pipeline + Brevo sync: one lead write, one contact upsert with list 34, retry repeats neither; all provider calls mocked.');
+          JS
