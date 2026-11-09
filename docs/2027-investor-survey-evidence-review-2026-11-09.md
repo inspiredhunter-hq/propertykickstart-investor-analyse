@@ -43,3 +43,10 @@ Date: 9 November 2026. Status: PARTIAL PASS — existing evidence reviewed; no b
 **OPEN:** Conditional-validation defect and limited branch/regression checks.
 **OUT OF SCOPE for survey acceptance:** Notion authentication 401 / database persistence, tracked separately.
 **Production:** No release approval recorded.
+
+## Update — 9 November 2026: Q5 verified
+- User screenshot confirms corrected conditional wording is deployed, compact mobile checklist is displayed, and professional selection is retained.
+- User explicitly confirmed pressing Continue succeeds with selected professionals.
+- Q5 conditional selection, navigation and wording: **PASS** for the tested path.
+- Do not repeat Q5 testing; untested 'Other' and untick paths remain separate targeted checks.
+- Next priority: Q8 conditional follow-up and its own branch, plus remaining targeted tests as described above.
