@@ -28,7 +28,7 @@ function professionalData(){
 function drawProfessionals(){
  const box=document.getElementById("professionalFollowup");
  if(!box)return;
- box.innerHTML='<div class="summary" style="margin:0;padding:18px"><p id="professionalPrompt" style="margin-top:0">Would you like to tell us which professionals you’re struggling to find? <span class="helper">(Optional)</span></p><label><input type="checkbox" id="professionalYes"> Yes, I’d like to tell you</label><p class="helper" style="margin-bottom:0">You can leave this section blank and continue.</p><div id="professionalDetails"></div></div>';
+ box.innerHTML='<div class="summary" style="margin:0;padding:18px"><p id="professionalPrompt" style="margin-top:0">Would you like to tell us which professionals you’re struggling to find? <span class="helper">(Optional)</span></p><label><input type="checkbox" id="professionalYes"> Yes, I’d like to tell you</label><p class="helper" style="margin-bottom:0">This question is optional. If you tick Yes, please select at least one professional below.</p><div id="professionalDetails"></div></div>';
  const yesBox=document.getElementById("professionalYes");yesBox.checked=professionalFollowup.wantsToTell;
  yesBox.onchange=e=>{if(e.target.checked)professionalFollowup.wantsToTell=true;else resetProfessionalFollowup();drawProfessionals()};
  if(!professionalFollowup.wantsToTell)return;
