@@ -23,7 +23,12 @@ Registry notes custom hostname/DNS not yet verified; never assume public hostnam
 - Deployment configuration / credentials: production Cloudflare Worker configuration still requires identification and validation.
 
 ## Nothing-left-behind sweep
-PK HTML Pages Registry Ready-to-Deploy view NOT YET inspected in full; no unrelated items authorised to be included. Must reconcile all ready items as included or deferred before production release.
+PK HTML Pages Registry Ready-to-Deploy records inspected via Notion registry on 9 November 2026. Four records found; all DEFERRED from this survey-specific release:
+- PKH-1 Home, hub.propertykickstart.co.uk, index.html: footer Tools link correction; defer to next justified Hub batch with PKH-2.
+- PKH-2 404 - Page Not Found, hub.propertykickstart.co.uk, 404.html: defer to next justified Hub batch with PKH-1.
+- Mortgage & Stress Test Calculator, mortgage.propertykickstart.co.uk, mortgage/index.html: defer to mortgage deployment, email delivery and QA pending.
+- LHA Household Scenario Analyser, hub.propertykickstart.co.uk, deal-analyser/lha-scenario-analyser/index.html: defer to ACT-699/ACT-698 authenticated LHA release.
+No survey record was flagged Ready to Deploy in the registry. Survey release remains separately owner-authorised; update its PKH record when ready.
 
 ## Outstanding gates — do not deploy until completed
 1. Verify Netlify pk-investor-survey Git branch/build publish directory, confirm whether it is safe to promote candidate branch. The existing live release branch is not modified.
