@@ -5,6 +5,9 @@
 [context."release/survey-live-20261106"]
   publish = "production"
 
+[context."release/survey-v2-20261109-candidate"]
+  publish = "production"
+
 [[headers]]
   for = "/*"
   [headers.values]
