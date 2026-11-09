@@ -140,7 +140,7 @@ jobs:
                   print("Current deployment identity:", json.dumps(result))
 
           print("Modules:", json.dumps(sorted(modules)))
-          selected = ["quiz-consumer.mjs", "quiz-pipeline.mjs", "quiz-live-runtime.mjs", "notion-client.mjs", "lead-mapping.mjs", "delivery-engine.mjs"]
+          selected = ["quiz-contract.mjs", "quiz-http-intake.mjs", "quiz-store.mjs", "quiz-consumer.mjs", "quiz-pipeline.mjs", "quiz-live-runtime.mjs", "notion-client.mjs", "lead-mapping.mjs", "delivery-engine.mjs"]
           for name in selected:
               code = modules.get(name)
               if code is None:
