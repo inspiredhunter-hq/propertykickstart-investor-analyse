@@ -12,6 +12,7 @@ assert(html.includes('a[7]?.includes("Finding reliable local professionals")'));
 assert(html.includes('step===7&&v==="Finding reliable local professionals"&&!a[4]?.includes("Finding reliable professionals")'));
 assert(html.includes('if(step===4||step===7)drawProfessionals();'));
 assert(html.includes('target="_blank" rel="noopener noreferrer">Join'));
+assert((html.match(/<a href="\/privacy\/"/g)||[]).length>=2&&(html.match(/<a href="\/privacy\/"(?! target="_blank" rel="noopener noreferrer")/g)||[]).length===0,'every Privacy notice link opens in a new tab');
 assert(html.includes('Your survey will stay open here.'));
 assert(read('production/_redirects').startsWith('/ /2027/ 302\n'));
 assert(!fs.existsSync(new URL('../production/index.html',import.meta.url)));
