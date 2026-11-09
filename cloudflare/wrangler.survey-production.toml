@@ -1,7 +1,0 @@
-name = "pk-investor-survey"
-main = "investor-survey-worker-v2-production.mjs"
-compatibility_date = "2026-11-01"
-workers_dev = true
-
-[vars]
-ALLOWED_ORIGIN = "https://survey.propertykickstart.co.uk"

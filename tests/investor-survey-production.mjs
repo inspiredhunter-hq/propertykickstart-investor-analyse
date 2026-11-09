@@ -5,17 +5,18 @@ import worker from '../cloudflare/investor-survey-worker.mjs';
 const read=p=>fs.readFileSync(new URL('../'+p,import.meta.url),'utf8');
 const html=read('production/2027/index.html');
 new vm.Script(html.match(/<script>([\s\S]*?)<\/script>/)[1]);
-assert(!/TEST|localStorage|Download TEST/.test(html));
+assert(!/Download TEST|localStorage|is_test|Notion/.test(html));assert(html.includes('Question "+(step+1)+" of 12'));assert(html.includes('When are you hoping to make your next move with property investment'));
 assert(html.includes('survey_year:2027'));
-// BUG-47: production page offers the professionals follow-up for Q4 or Q7 (first or second rank), once only.
-assert(html.includes('a[6]?.includes("Finding reliable local professionals")'));
-assert(html.includes('step===6&&v==="Finding reliable local professionals"&&!a[3]?.includes("Finding reliable professionals")'));
-assert(html.includes('if(step===3||step===6)drawProfessionals();'));
+// BUG-47: production page offers the professionals follow-up for Q5 or Q8 (first or second rank), once only.
+assert(html.includes('a[7]?.includes("Finding reliable local professionals")'));
+assert(html.includes('step===7&&v==="Finding reliable local professionals"&&!a[4]?.includes("Finding reliable professionals")'));
+assert(html.includes('if(step===4||step===7)drawProfessionals();'));
 assert(html.includes('target="_blank" rel="noopener noreferrer">Join'));
 assert(html.includes('Your survey will stay open here.'));
 assert(read('production/_redirects').startsWith('/ /2027/ 302\n'));
 assert(!fs.existsSync(new URL('../production/index.html',import.meta.url)));
-for(const p of ['production/privacy/index.html','production/404.html'])assert(read(p).includes('href="/"'));
+assert(read('production/404.html').includes('href="/"'));
+assert(read('production/privacy/index.html').includes('https://privacy.propertykickstart.co.uk/'),'/privacy/ redirects to the central privacy notice');
 const source=read('cloudflare/investor-survey-worker.mjs');
 const scope=vm.createContext({});vm.runInContext(source.slice(0,source.indexOf('export default')),scope);
 const match=vm.runInContext('matchInvestor',scope);

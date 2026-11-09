@@ -1,4 +1,4 @@
-// BUG-47 browser acceptance: professionals follow-up for Q4 and ranked Q7 (first or second), shown once, optional.
+// BUG-47 browser acceptance: professionals follow-up for Q5 and ranked Q8 (first or second), shown once, optional.
 const {chromium}=require('playwright-core');
 const fs=require('node:fs');
 const assert=require('node:assert/strict');
@@ -15,42 +15,42 @@ const Q4="Finding reliable professionals",Q7="Finding reliable local professiona
  const data=()=>page.evaluate(()=>professionalData());
  try{
   // 1 Q4 only
-  await fresh();await go(3);await pick(Q4);assert.equal(await prompts(),1,'Q4 only: one prompt on Q4');
-  await go(6);assert.equal(await prompts(),0,'Q4 only: no prompt on Q7');
+  await fresh();await go(4);await pick(Q4);assert.equal(await prompts(),1,'Q4 only: one prompt on Q4');
+  await go(7);assert.equal(await prompts(),0,'Q4 only: no prompt on Q7');
   // 2 Q7 first rank
-  await fresh();await go(6);await pick(Q7);await pick(OTHER7);assert.equal(await prompts(),1,'Q7 first rank');
+  await fresh();await go(7);await pick(Q7);await pick(OTHER7);assert.equal(await prompts(),1,'Q7 first rank');
   // 3 Q7 second rank
-  await fresh();await go(6);await pick(OTHER7);await pick(Q7);assert.equal(await prompts(),1,'Q7 second rank');
-  assert.equal(await page.evaluate(()=>a[6].indexOf("Finding reliable local professionals")),1);
+  await fresh();await go(7);await pick(OTHER7);await pick(Q7);assert.equal(await prompts(),1,'Q7 second rank');
+  assert.equal(await page.evaluate(()=>a[7].indexOf("Finding reliable local professionals")),1);
   // 4 both triggers: exactly one prompt overall (Q4), none duplicated on Q7
-  await fresh();await go(3);await pick(Q4);await go(6);await pick(Q7);await pick(OTHER7);
+  await fresh();await go(4);await pick(Q4);await go(7);await pick(Q7);await pick(OTHER7);
   assert.equal(await prompts(),0,'both triggers: Q7 must not repeat the prompt');
-  await go(3);assert.equal(await prompts(),1,'both triggers: Q4 keeps the single prompt');
+  await go(4);assert.equal(await prompts(),1,'both triggers: Q4 keeps the single prompt');
   // 5 no trigger
-  await fresh();await go(3);await pick("Assessing risks");assert.equal(await prompts(),0);
-  await go(6);await pick(OTHER7);assert.equal(await prompts(),0);assert.equal(await data(),undefined);
+  await fresh();await go(4);await pick("Assessing risks");assert.equal(await prompts(),0);
+  await go(7);await pick(OTHER7);assert.equal(await prompts(),0);assert.equal(await data(),undefined);
   // 6 optional: Yes + Other with blank detail never blocks Continue (Q7 route)
-  await fresh();await go(6);await pick(Q7);await pick(OTHER7);
+  await fresh();await go(7);await pick(Q7);await pick(OTHER7);
   await page.locator('#professionalYes').check();
   await page.locator('[data-professional]').last().check();
   assert.equal(await page.locator('#professionalOther').isVisible(),true);
   await page.locator('#next').click();
-  assert.equal(await page.evaluate(()=>step),7,'Continue accepted with blank Other detail');
+  assert.equal(await page.evaluate(()=>step),8,'Continue accepted with blank Other detail');
   let d=await data();assert.equal(d.wantsToTell,true);assert.equal(d.other,"");assert(d.selected.includes("Other"));
   // 7 back navigation preserves selections while parent remains
-  await page.locator('#back').click();assert.equal(await page.evaluate(()=>step),6);
+  await page.locator('#back').click();assert.equal(await page.evaluate(()=>step),7);
   assert.equal(await page.locator('#professionalYes').isChecked(),true);
   assert.equal(await page.locator('[data-professional]').last().isChecked(),true);
   // 8 unanswered / Yes with nothing selected still continues
-  await fresh();await go(6);await pick(Q7);await pick(OTHER7);await page.locator('#next').click();assert.equal(await page.evaluate(()=>step),7);
-  await go(6);await page.locator('#professionalYes').check();await page.locator('#next').click();assert.equal(await page.evaluate(()=>step),7);
+  await fresh();await go(7);await pick(Q7);await pick(OTHER7);await page.locator('#next').click();assert.equal(await page.evaluate(()=>step),8);
+  await go(7);await page.locator('#professionalYes').check();await page.locator('#next').click();assert.equal(await page.evaluate(()=>step),8);
   // 9 deselecting the only parent clears the follow-up data
-  await go(6);await pick(Q7);assert.equal(await prompts(),0);
+  await go(7);await pick(Q7);assert.equal(await prompts(),0);
   assert.equal(await data(),undefined);
   assert.deepEqual(await page.evaluate(()=>({...professionalFollowup})),{wantsToTell:false,selected:[],other:""});
   // 10 Q4 parent keeps data when Q7 trigger removed
-  await fresh();await go(3);await pick(Q4);await page.locator('#professionalYes').check();await page.locator('[data-professional]').first().check();
-  await go(6);await pick(Q7);await pick(Q7);
+  await fresh();await go(4);await pick(Q4);await page.locator('#professionalYes').check();await page.locator('[data-professional]').first().check();
+  await go(7);await pick(Q7);await pick(Q7);
   d=await data();assert.equal(d.wantsToTell,true);assert.deepEqual(d.selected,["Mortgage brokers"]);
   console.log('PASS: BUG-47 browser scenarios on '+(process.env.SURVEY_HTML||'production/2027/index.html'));
  }finally{await browser.close();}
