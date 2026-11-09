@@ -50,3 +50,8 @@ Date: 9 November 2026. Status: PARTIAL PASS — existing evidence reviewed; no b
 - Q5 conditional selection, navigation and wording: **PASS** for the tested path.
 - Do not repeat Q5 testing; untested 'Other' and untick paths remain separate targeted checks.
 - Next priority: Q8 conditional follow-up and its own branch, plus remaining targeted tests as described above.
+
+## Update — Q8 verified by user
+- Screenshot confirms Q8 'Finding reliable local professionals' selected as second-ranked priority, optional follow-up shown, corrected wording and compact mobile checklist.
+- User confirmed selecting a professional permits Continue, and unticking the optional box permits skipping the follow-up.
+- Q8 professional follow-up display, selection and skip paths: **PASS**. No further repeat of these paths needed.
