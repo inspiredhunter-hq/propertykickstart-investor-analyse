@@ -21,6 +21,6 @@ Not written: routing fields (ROUTE, PRIMARY_NEED, DESIRED_OUTCOME, BARRIER, SUPP
 tests/assessment-brevo-contact.mjs (8) plus tests/assessment-investor-link.mjs (10): 18 pass.
 
 ## Before apply (still to do)
-1. Refresh deploy-assessment-link.py guards: live version bd0525b4-606c-4fb0-bc83-871dfc723c3b (rollback), 30 modules, runtime sha256 24bc3bac1a3087e3eae918d8a37d112bee1d40007245f226d0467029929245f5.
+1. DONE: guards refreshed in scripts/deploy-assessment-brevo.py (rollback bd0525b4-606c-4fb0-bc83-871dfc723c3b, 30 live modules, runtime sha256 24bc3bac...). Not yet run against Cloudflare.
 2. Run scripts/prepare-assessment-brevo-patch.py --expected-runtime-sha256 <above> on the fresh download (checked against the live runtime text: anchors match).
 3. Hanna approves; apply; test with PropertyKickstartUK+BrevoAssessment_test1@gmail.com; confirm contact, list 34, no duplicate send.
