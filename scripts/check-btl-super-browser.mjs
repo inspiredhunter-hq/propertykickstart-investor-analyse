@@ -43,7 +43,7 @@ try{
  assert.equal(await page.locator('#superInitialWorks').inputValue(),'2000');
  assert.equal(await page.locator('#superFurniture').inputValue(),'600');
  assert(await page.locator('#analysisContent').isVisible(),'Loaded analysis should return after acknowledgement');
- assert((await page.locator('[data-pk-universal-header]').innerText()).includes('BTL-NW-12345'));
+ assert((await page.locator('.pk-universal-header').innerText()).includes('BTL-NW-12345'));
  assert(await page.locator('#unitDetails').isHidden(),'Old unit fixture must be hidden for new Pipeline property');
  // Altering the chosen code must never show stale figures, even if the request fails.
  await page.locator('#pkLookupInput').fill('BTL-NW-99999');
