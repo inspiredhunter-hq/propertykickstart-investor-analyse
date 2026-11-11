@@ -1,0 +1,15 @@
+/* ACT-882 universal acknowledgement screen v1.0. Applies to legacy gate identifiers without replacing validation logic. */
+#pkDisclosureGate,#ackGate{max-width:850px;margin:24px auto;padding:24px;background:#fff;border:1px solid #dddfe8;border-radius:13px;color:#192638;line-height:1.55}
+#pkDisclosureGate .pk-small:first-child,#ackGate>.muted:first-child{font-size:.78rem;color:#73400a;font-weight:800;letter-spacing:.12em}
+#pkGateHeading,#ackTitle{color:#34204e;font-size:clamp(1.5rem,4vw,2rem);margin:8px 0 14px}
+#pkDisclosureGate .pk-preview,#ackGate .preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
+#pkDisclosureGate .pk-preview>div,#ackGate .preview>div{background:#f1eef8;border-radius:9px;padding:15px}
+#pkDisclosureGate .pk-preview strong,#ackGate .preview strong{display:block;font-size:clamp(1.1rem,3vw,1.45rem)}
+#pkDisclosureGate .pk-risk,#ackGate .risk-warning{background:#fff2d9;border-left:5px solid #ad5415;padding:14px;margin:16px 0;color:#29252a}
+#pkDisclosureGate label[for="pkAccept"],#ackGate .ack-label{display:flex;align-items:flex-start;gap:11px;padding:14px 0;line-height:1.55}
+#pkDisclosureGate #pkAccept,#ackGate #ackBox{flex:0 0 20px;width:20px;height:20px;margin-top:4px}
+#pkDisclosureGate #pkReveal,#ackGate #revealBtn{background:#4c2678;color:white;border:0;border-radius:8px;padding:12px 19px;font:inherit;font-weight:700;cursor:pointer}
+#pkDisclosureGate #pkReveal:disabled,#ackGate #revealBtn:disabled{opacity:.5;cursor:not-allowed}
+#pkDisclosureGate :focus-visible,#ackGate :focus-visible{outline:3px solid #e38a31;outline-offset:3px}
+@media(max-width:520px){#pkDisclosureGate,#ackGate{margin:14px;padding:17px}#pkDisclosureGate .pk-preview,#ackGate .preview{grid-template-columns:1fr}}
+@media print{#pkDisclosureGate,#ackGate{display:none!important}}
