@@ -8,7 +8,7 @@ const root=path.resolve('test');
 const example={propertyCode:'BTL-NW-12345',strategy:'Buy to Let',town:'St Helens',region:'North West',askingPrice:222000,purchasePrice:220000,monthlyRent:1500,brokerage:2200,legalFees:1500,survey:400,arrangementFee:1299,stampDuty:10500,annualInsurance:400,managementRate:10,refurb:2000,furnishing:600,maintenance:900,annualVoid:900,annualOther:200,annualGroundRent:0,annualCompliance:250,otherAcquisition:350};
 const sourceFields=Object.fromEntries(Object.entries(example).map(([k])=>[k,k]));
 const server=http.createServer(async(req,res)=>{
- if(req.url==='/\.netlify/functions/pipeline-property' && req.method==='POST'){
+ if(req.url==='/.netlify/functions/pipeline-property' && req.method==='POST'){
   let raw='';for await (const chunk of req)raw+=chunk;const {propertyCode}=JSON.parse(raw);
   res.setHeader('Content-Type','application/json');
   if(propertyCode!==example.propertyCode){res.writeHead(404);res.end(JSON.stringify({error:'No unique matching Pipeline record found'}));return;}
