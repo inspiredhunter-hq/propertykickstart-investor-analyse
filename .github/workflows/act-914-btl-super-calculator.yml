@@ -1,0 +1,27 @@
+name: ACT-914 BTL Super Calculator TEST checks
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'test/NewCalculator/**'
+      - 'NewCalculator/**'
+      - 'netlify/functions/pipeline-property.mjs'
+      - 'scripts/check-btl-super-calculator.mjs'
+      - 'scripts/check-btl-super-browser.mjs'
+      - '.github/workflows/act-914-btl-super-calculator.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test-static-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/check-btl-super-calculator.mjs
+      - run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/check-btl-super-browser.mjs
