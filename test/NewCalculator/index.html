@@ -186,9 +186,9 @@ async function load(){
   const costs={1:p.maintenance,2:p.annualVoid,3:p.annualInsurance,4:p.annualCompliance,5:null,6:null,7:p.annualGroundRent,8:null,9:null,10:p.annualOther,11:null};
   for(const [id,value] of Object.entries(costs))cost(id,value);
   const management=numeric(p.managementRate)?p.monthlyRent*12*Number(el('managementRate').value)/100:null;cost(0,management);
-  const header=document.querySelector('[data-pk-universal-header]');
+  const header=document.querySelector('.pk-universal-header')||document.querySelector('[data-pk-universal-header]');
   const town=p.town||'Town not provided',region=p.region||'Region not provided';
-  if(header){header.dataset.propertyCode=code;header.dataset.town=town;header.dataset.region=region;header.dataset.rent='£'+p.monthlyRent.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});header.querySelector('h1').textContent=header.dataset.rent+' a month in rent. What could an investor keep?';const para=header.querySelector('p');if(para)para.textContent='Property Code: '+code;}
+  if(header){header.dataset.propertyCode=code;header.dataset.town=town;header.dataset.region=region;header.dataset.rent='£'+p.monthlyRent.toLocaleString('en-GB',{minimumFractionDigits:2,maximumFractionDigits:2});header.querySelector('h1').textContent=header.dataset.rent+' a month in rent. What could an investor keep?';const para=header.querySelector('.pk-property-code')||header.querySelector('p');if(para)para.textContent='Property Code: '+code;}
   const details=el('gatedPropertyDetails');if(details)details.textContent='Buy to Let · '+code+' · '+town+' · '+region;
   const unitBlock=el('unitDetails')?.closest('.unit-section');if(unitBlock)unitBlock.hidden=true;
   const printUnits=el('includeUnitPage');if(printUnits){printUnits.checked=false;printUnits.closest('label').hidden=true;printUnits.dispatchEvent(new Event('change'));}
