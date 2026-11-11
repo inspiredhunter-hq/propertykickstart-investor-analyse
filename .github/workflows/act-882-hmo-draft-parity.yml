@@ -1,0 +1,37 @@
+name: ACT-882 HMO master draft structural acceptance
+on:
+  pull_request:
+    paths:
+      - 'drafts/HMO-NW-2S98D-btl-master/**'
+      - 'scripts/check-hmo-master-draft.mjs'
+      - 'scripts/check-hmo-draft-browser.mjs'
+      - '.github/workflows/act-882-hmo-draft-parity.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hmo-draft-parity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Structural and source financial tests
+        run: node scripts/check-hmo-master-draft.mjs
+      - name: Install browser test dependencies
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y poppler-utils
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - name: Browser and PDF financial acceptance
+        run: node scripts/check-hmo-draft-browser.mjs
+      - name: Upload HMO acceptance artefacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: HMO-draft-acceptance
+          path: |
+            /tmp/hmo-acceptance.pdf
+            /tmp/hmo-mobile.png
+          if-no-files-found: ignore
