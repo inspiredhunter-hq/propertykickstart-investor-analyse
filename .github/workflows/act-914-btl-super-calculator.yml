@@ -7,6 +7,7 @@ on:
       - 'NewCalculator/**'
       - 'netlify/functions/pipeline-property.mjs'
       - 'scripts/check-btl-super-calculator.mjs'
+      - 'scripts/check-btl-super-browser.mjs'
       - '.github/workflows/act-914-btl-super-calculator.yml'
   workflow_dispatch:
 permissions:
@@ -20,3 +21,7 @@ jobs:
         with:
           node-version: '22'
       - run: node scripts/check-btl-super-calculator.mjs
+      - run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+      - run: node scripts/check-btl-super-browser.mjs
